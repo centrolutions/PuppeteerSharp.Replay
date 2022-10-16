@@ -1,0 +1,11 @@
+namespace PuppeteerSharp.Replay.Tests
+{
+    public class UnitTest1
+    {
+        [Fact]
+        public void Test1()
+        {
+
+        }
+    }
+}
