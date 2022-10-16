@@ -1,4 +1,6 @@
-﻿namespace PuppeteerSharp.Replay.Tests
+﻿using PuppeteerSharp.Replay.Contracts;
+
+namespace PuppeteerSharp.Replay.Tests
 {
     public class UserFlowTests
     {

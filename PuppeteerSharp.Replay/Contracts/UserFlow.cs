@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace PuppeteerSharp.Replay
+namespace PuppeteerSharp.Replay.Contracts
 {
     public class UserFlow
     {
@@ -27,7 +27,7 @@ namespace PuppeteerSharp.Replay
         public bool IsMobile { get; set; }
         public bool HasTouch { get; set; }
         public bool IsLandscape { get; set; }
-        
+
         //navigate
         public string Url { get; set; }
         public AssertedEvent[] AssertedEvents { get; set; }
