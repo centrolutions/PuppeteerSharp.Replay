@@ -2,7 +2,7 @@
 
 namespace PuppeteerSharp.Replay
 {
-    public class Class1
+    public class Runner
     {
 
     }
