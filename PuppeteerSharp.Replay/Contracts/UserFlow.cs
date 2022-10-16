@@ -8,6 +8,7 @@ namespace PuppeteerSharp.Replay.Contracts
     public class UserFlow
     {
         public string Title { get; set; }
+        public int? Timeout { get; set; }
         public Step[] Steps { get; set; }
 
         public static UserFlow Parse(string json)
@@ -20,6 +21,9 @@ namespace PuppeteerSharp.Replay.Contracts
     public class Step
     {
         public string Type { get; set; }
+        public int? Timeout { get; set; }
+        public int[] Frame { get; set; }
+
         //setViewport
         public int Width { get; set; }
         public int Height { get; set; }
