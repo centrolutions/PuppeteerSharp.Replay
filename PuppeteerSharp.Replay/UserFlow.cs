@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -8,6 +9,12 @@ namespace PuppeteerSharp.Replay
     {
         public string Title { get; set; }
         public Step[] Steps { get; set; }
+
+        public static UserFlow Parse(string json)
+        {
+            var result = JsonConvert.DeserializeObject<UserFlow>(json);
+            return result;
+        }
     }
 
     public class Step

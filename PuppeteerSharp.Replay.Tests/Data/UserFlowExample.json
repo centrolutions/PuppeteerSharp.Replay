@@ -1,0 +1,101 @@
+{
+	"title": "Google Centrolutions",
+	"steps": [
+		{
+			"type": "setViewport",
+			"width": 990,
+			"height": 809,
+			"deviceScaleFactor": 1,
+			"isMobile": false,
+			"hasTouch": false,
+			"isLandscape": false
+		},
+		{
+			"type": "navigate",
+			"url": "chrome://apps/",
+			"assertedEvents": [
+				{
+					"type": "navigation",
+					"url": "chrome://apps/",
+					"title": "New Tab"
+				}
+			]
+		},
+		{
+			"type": "navigate",
+			"url": "https://www.google.com/",
+			"assertedEvents": [
+				{
+					"type": "navigation",
+					"url": "https://www.google.com/",
+					"title": ""
+				}
+			]
+		},
+		{
+			"type": "click",
+			"target": "main",
+			"selectors": [
+				[
+					"aria/Search"
+				],
+				[
+					"body > div.L3eUgb > div.o3j99.ikrT4e.om7nvf > form > div:nth-child(1) > div.A8SBwf > div.RNNXgb > div > div.a4bIc > input"
+				]
+			],
+			"offsetY": 21.29998779296875,
+			"offsetX": 109
+		},
+		{
+			"type": "change",
+			"value": "centrolutions",
+			"selectors": [
+				[
+					"aria/Search"
+				],
+				[
+					"body > div > div.o3j99.ikrT4e.om7nvf > form > div > div > div.RNNXgb > div > div.a4bIc > input"
+				]
+			],
+			"target": "main"
+		},
+		{
+			"type": "keyDown",
+			"target": "main",
+			"key": "Enter",
+			"assertedEvents": [
+				{
+					"type": "navigation",
+					"url": "https://www.google.com/search?q=centrolutions&sxsrf=ALiCzsYdBfXak3X3pLDbFpvBTBwp6Sj2sA%3A1665877597343&source=hp&ei=XUZLY8yiEvvk0PEPz6eK4A4&iflsig=AJiK0e8AAAAAY0tUbVhUJhFWSreDy8tYtmlvlbodJqeH&ved=0ahUKEwiMxbTTteP6AhV7MjQIHc-TAuwQ4dUDCAk&uact=5&oq=centrolutions&gs_lcp=Cgdnd3Mtd2l6EAMyBAgjECcyAggmOgcIIxDqAhAnOg0ILhDHARCvARDqAhAnOgcILhDqAhAnOgUIABCRAjoLCAAQgAQQsQMQgwE6DgguEIAEELEDEIMBENQCOhEILhCABBCxAxCDARDHARDRAzoLCC4QsQMQgwEQkQI6BQguEIAEOgsILhCABBDHARDRAzoICAAQgAQQsQM6CwguEIAEEMcBEK8BOggIABCxAxCDAToOCC4QgAQQxwEQrwEQ1AI6BQgAEIAEOg4ILhCABBCxAxDHARDRAzoLCC4QgAQQsQMQgwE6CAgAEIAEEMkDOgsILhCxAxDHARDRAzoKCAAQgAQQsQMQCjoHCAAQgAQQCjoNCC4QgAQQxwEQrwEQCjoKCAAQgAQQyQMQCjoECAAQHjoGCAAQHhAKUKsGWNsPYPAQaAFwAHgAgAHDAYgB6AuSAQM1LjiYAQCgAQGwAQo&sclient=gws-wiz",
+					"title": ""
+				}
+			]
+		},
+		{
+			"type": "keyUp",
+			"key": "Enter",
+			"target": "main"
+		},
+		{
+			"type": "click",
+			"target": "main",
+			"selectors": [
+				[
+					"aria/Centrolutions - YouTube"
+				],
+				[
+					"#rso > div:nth-child(2) > div > div > div.Z26q7c.UK95Uc.jGGQ5e > div > a > h3"
+				]
+			],
+			"offsetY": 16.6875,
+			"offsetX": 185,
+			"assertedEvents": [
+				{
+					"type": "navigation",
+					"url": "https://www.youtube.com/user/Centrolutions",
+					"title": ""
+				}
+			]
+		}
+	]
+}

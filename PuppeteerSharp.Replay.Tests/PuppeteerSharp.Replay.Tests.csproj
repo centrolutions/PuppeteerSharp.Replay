@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -7,6 +7,16 @@
 
     <IsPackable>false</IsPackable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Data\UserFlowExample.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Data\UserFlowExample.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
@@ -24,5 +34,7 @@
   <ItemGroup>
     <ProjectReference Include="..\PuppeteerSharp.Replay\PuppeteerSharp.Replay.csproj" />
   </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties data_4userflowexample_1json__JsonSchema="{" /></VisualStudio></ProjectExtensions>
 
 </Project>
