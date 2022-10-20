@@ -56,4 +56,21 @@ namespace PuppeteerSharp.Replay.Contracts
         public string Title { get; set; }
     }
 
+    public static class StepType
+    {
+        public const string Change = "change";
+        public const string Click = "click";
+        public const string Close = "close";
+        public const string CustomStep = "customStep";
+        public const string DoubleClick = "doubleClick";
+        public const string EmulateNetworkConditions = "emulateNetworkConditions";
+        public const string Hover = "hover";
+        public const string KeyDown = "keyDown";
+        public const string KeyUp = "keyUp";
+        public const string Navigate = "navigate";
+        public const string Scroll = "scroll";
+        public const string SetViewport = "setViewport";
+        public const string WaitForElement = "waitForElement";
+        public const string WaitForExpression = "waitForExpression";
+    }
 }
