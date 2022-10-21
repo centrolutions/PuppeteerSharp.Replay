@@ -65,5 +65,12 @@ namespace PuppeteerSharp.Replay.Tests
 
             _ExtensionMock.Verify(x => x.RunStep(It.IsAny<Step>(), It.IsAny<UserFlow>()), Times.Exactly(timesExpected));
         }
+
+        [Fact]
+        public async Task CanRunFlow()
+        {
+            var runner = await Runner.CreateRunner(_Flow);
+            await runner.Run();
+        }
     }
 }

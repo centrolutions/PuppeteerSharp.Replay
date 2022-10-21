@@ -39,8 +39,10 @@ namespace PuppeteerSharp.Replay.Contracts
         //click
         public string Target { get; set; }
         public string[][] Selectors { get; set; }
-        public float OffsetY { get; set; }
-        public int OffsetX { get; set; }
+        public decimal OffsetY { get; set; }
+        public decimal OffsetX { get; set; }
+        public int? Duration { get; set; }
+        public string Button { get; set; }
 
         //change
         public string Value { get; set; }
@@ -72,5 +74,10 @@ namespace PuppeteerSharp.Replay.Contracts
         public const string SetViewport = "setViewport";
         public const string WaitForElement = "waitForElement";
         public const string WaitForExpression = "waitForExpression";
+    }
+
+    public static class AssertedEventType
+    {
+        public const string Navigation = "navigation";
     }
 }

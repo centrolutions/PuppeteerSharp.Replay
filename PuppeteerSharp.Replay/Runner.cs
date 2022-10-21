@@ -30,7 +30,24 @@ namespace PuppeteerSharp.Replay
             }
 
             await Extension.AfterAllSteps(Flow);
-            return false; 
+            return false;
+        }
+
+        public static async Task<Runner> CreateRunner(UserFlow flow, IRunnerExtension extension = null)
+        {
+            if (extension == null)
+            {
+                var fetcher = new BrowserFetcher();
+                await fetcher.DownloadAsync();
+                var options = new LaunchOptions()
+                {
+                    Headless = false,
+                };
+                IBrowser browser = await Puppeteer.LaunchAsync(options);
+                IPage page = await browser.NewPageAsync();
+                extension = new RunnerExtension(browser, page, null);
+            }
+            return new Runner(flow, extension);
         }
     }
 }
