@@ -21,7 +21,7 @@ jobs:
       uses: browser-actions/setup-chrome@v0.0.0
       with:
         # The Chromium version to install and use.
-        chromium-version: 106
+        chromium-version: 105.0.5195
     - uses: actions/checkout@v3
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
