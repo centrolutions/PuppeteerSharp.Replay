@@ -7,7 +7,7 @@ namespace PuppeteerSharp.Replay.Tests
         [Fact]
         public void Parse_DeserializesCorrectly()
         {
-            var jsonText = File.ReadAllText("Data\\UserFlowExample.json");
+            var jsonText = File.ReadAllText($"Data{Path.DirectorySeparatorChar}UserFlowExample.json");
             
             var sut = UserFlow.Parse(jsonText);
 
