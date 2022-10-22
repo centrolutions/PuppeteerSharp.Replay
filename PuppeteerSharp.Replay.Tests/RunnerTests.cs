@@ -12,7 +12,7 @@ namespace PuppeteerSharp.Replay.Tests
         public RunnerTests()
         {
             _ExtensionMock = new Mock<IRunnerExtension>();
-            _Flow = UserFlow.Parse(File.ReadAllText(@"Data\UserFlowExample.json"));
+            _Flow = UserFlow.Parse(File.ReadAllText($"Data{Path.DirectorySeparatorChar}UserFlowExample.json"));
             _Sut = new Runner(_Flow, _ExtensionMock.Object);
         }
 

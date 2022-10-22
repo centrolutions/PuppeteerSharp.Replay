@@ -69,6 +69,7 @@ namespace PuppeteerSharp.Replay
                     break;
                 case StepType.DoubleClick:
                     await Task.WhenAll(eventTasks.Append(Click(step, timeout, 2)));
+                    break;
                 case StepType.Change:
                     await Task.WhenAll(eventTasks.Append(Change(step, timeout)));
                     break;
