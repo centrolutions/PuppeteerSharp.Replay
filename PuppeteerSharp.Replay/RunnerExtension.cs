@@ -55,23 +55,20 @@ namespace PuppeteerSharp.Replay
         public async Task RunStep(Step step, UserFlow flow)
         {
             int timeout = GetTimeoutForStep(step, flow);
+            var eventTasks = WaitForEvents(step, timeout);
             switch (step.Type)
             {
                 case StepType.SetViewport:
-                    await SetViewport(step);
-                    await WaitForEvents(step, timeout);
+                    await Task.WhenAll(eventTasks.Append(SetViewport(step)));
                     break;
                 case StepType.Navigate:
-                    await Navigate(step, timeout);
-                    await WaitForEvents(step, timeout);
+                    await Task.WhenAll(eventTasks.Append(Navigate(step, timeout)));
                     break;
                 case StepType.Click:
-                    await Click(step, timeout);
-                    await WaitForEvents(step, timeout);
+                    await Task.WhenAll(eventTasks.Append(Click(step, timeout)));
                     break;
                 case StepType.Change:
-                    await Change(step, timeout);
-                    await WaitForEvents(step, timeout);
+                    await Task.WhenAll(eventTasks.Append(Change(step, timeout)));
                     break;
                 case StepType.KeyDown:
                     await KeyDown(step);
@@ -173,9 +170,9 @@ namespace PuppeteerSharp.Replay
             return step.Timeout ?? flow.Timeout ?? _Timeout ?? 0;
         }
 
-        async Task WaitForEvents(Step step, int timeout)
+        IEnumerable<Task> WaitForEvents(Step step, int timeout)
         {
-            if (step.AssertedEvents == null || step.AssertedEvents.Length <= 0) return;
+            if (step.AssertedEvents == null || step.AssertedEvents.Length <= 0) return new Task[] { };
 
             var events = new List<Task>();
             foreach (var ev in step.AssertedEvents)
@@ -190,8 +187,7 @@ namespace PuppeteerSharp.Replay
                 }
             }
 
-            await Task.CompletedTask;
-            //await Task.WhenAll(events);
+            return events;
         }
 
         async Task<IElementHandle> WaitForSelectors(string[][] selectors, int timeout, bool visible)
@@ -207,7 +203,7 @@ namespace PuppeteerSharp.Replay
                     Console.WriteLine($"Error in waitForSelectors: {ex.ToString()}");
                 }
             }
-            throw new Exception("Could not find element for selectors.");
+            throw new Exception("Could not find element for selectors: " + string.Join(";", selectors.Select(x => string.Join(">>", x))));
         }
 
         async Task<IElementHandle> WaitForSelector(string[] selectors, int timeout, bool visible)
