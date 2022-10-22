@@ -65,8 +65,10 @@ namespace PuppeteerSharp.Replay
                     await Task.WhenAll(eventTasks.Append(Navigate(step, timeout)));
                     break;
                 case StepType.Click:
-                    await Task.WhenAll(eventTasks.Append(Click(step, timeout)));
+                    await Task.WhenAll(eventTasks.Append(Click(step, timeout, 1)));
                     break;
+                case StepType.DoubleClick:
+                    await Task.WhenAll(eventTasks.Append(Click(step, timeout, 2)));
                 case StepType.Change:
                     await Task.WhenAll(eventTasks.Append(Change(step, timeout)));
                     break;
@@ -130,15 +132,18 @@ namespace PuppeteerSharp.Replay
             await element.EvaluateFunctionAsync("(e) => { e.blur(); e.focus(); }");
         }
 
-        async Task Click(Step step, int timeout)
+        async Task Click(Step step, int timeout, int clickCount)
         {
             var element = await WaitForSelectors(step.Selectors, timeout, false);
             var options = new ClickOptions()
             {
-                Delay = step.Duration ?? 0,
                 OffSet = new Offset(step.OffsetX, step.OffsetY),
+                ClickCount = clickCount
             };
-            //TODO: handle mouse button from step    
+            if (clickCount == 1)
+                options.Delay = step.Duration ?? 0;
+
+            //TODO: handle mouse button from step
             await element.ClickAsync(options);
         }
 
