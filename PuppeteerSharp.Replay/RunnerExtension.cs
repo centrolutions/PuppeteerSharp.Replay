@@ -71,10 +71,10 @@ namespace PuppeteerSharp.Replay
                     await Task.WhenAll(eventTasks.Append(Change(step, timeout)));
                     break;
                 case StepType.KeyDown:
-                    await KeyDown(step);
+                    await Task.WhenAll(eventTasks.Append(KeyDown(step)));
                     break;
                 case StepType.KeyUp:
-                    await KeyUp(step);
+                    await Task.WhenAll(eventTasks.Append(KeyUp(step)));
                     break;
             }
         }
@@ -194,14 +194,9 @@ namespace PuppeteerSharp.Replay
         {
             foreach (var selector in selectors)
             {
-                try
-                {
-                    return await WaitForSelector(selector, timeout, visible);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error in waitForSelectors: {ex.ToString()}");
-                }
+                var result = await WaitForSelector(selector, timeout, visible);
+                if (result != null)
+                    return result;
             }
             throw new Exception("Could not find element for selectors: " + string.Join(";", selectors.Select(x => string.Join(">>", x))));
         }
@@ -213,7 +208,7 @@ namespace PuppeteerSharp.Replay
                 return await _Page.WaitForSelectorAsync(selector, new WaitForSelectorOptions() { Timeout = timeout, Visible = visible });
             }
 
-            throw new Exception("Could not find element: " + String.Join(">>", selectors));
+            return null;
         }
     }
 }
