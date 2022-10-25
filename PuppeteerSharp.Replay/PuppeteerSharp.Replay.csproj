@@ -5,6 +5,7 @@
     <Title>PuppeteerSharp Replay</Title>
     <PackageProjectUrl>https://github.com/centrolutions/PuppeteerSharp.Replay</PackageProjectUrl>
     <RepositoryUrl>https://github.com/centrolutions/PuppeteerSharp.Replay</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
