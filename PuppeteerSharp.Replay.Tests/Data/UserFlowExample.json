@@ -12,17 +12,6 @@
 		},
 		{
 			"type": "navigate",
-			"url": "chrome://apps/",
-			"assertedEvents": [
-				{
-					"type": "navigation",
-					"url": "chrome://apps/",
-					"title": "New Tab"
-				}
-			]
-		},
-		{
-			"type": "navigate",
 			"url": "https://www.google.com/",
 			"assertedEvents": [
 				{

@@ -13,7 +13,7 @@ namespace PuppeteerSharp.Replay.Tests
 
             Assert.NotNull(sut);
             Assert.Equal("Google Centrolutions", sut.Title);
-            Assert.Equal(8, sut.Steps.Length);
+            Assert.Equal(7, sut.Steps.Length);
         }
     }
 }
