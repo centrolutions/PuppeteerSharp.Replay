@@ -9,8 +9,6 @@ namespace PuppeteerSharp.Replay
         public UserFlow Flow { get; }
         public IRunnerExtension Extension { get; }
 
-        private bool _Aborted;
-
         public Runner(UserFlow flow, IRunnerExtension extension)
         {
             Flow = flow;
@@ -19,7 +17,6 @@ namespace PuppeteerSharp.Replay
 
         public async Task<bool> Run()
         {
-            _Aborted = false;
             await Extension.BeforeAllSteps(Flow);
 
             foreach (var step in Flow.Steps)
