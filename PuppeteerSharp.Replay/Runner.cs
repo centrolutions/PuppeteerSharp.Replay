@@ -41,7 +41,8 @@ namespace PuppeteerSharp.Replay
                 await fetcher.DownloadAsync();
                 var options = new LaunchOptions()
                 {
-                    Headless = false,
+                    Headless = true,
+                    DefaultViewport = new ViewPortOptions() {  Width = 1285, Height = 810 }
                 };
                 IBrowser browser = await Puppeteer.LaunchAsync(options);
                 IPage page = await browser.NewPageAsync();
