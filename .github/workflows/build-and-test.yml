@@ -4,16 +4,13 @@
 name: Build and Publish
 
 on:
-  push:
+  pull_request:
     branches: [ "main" ]
 
 jobs:
   build:
 
     runs-on: ubuntu-latest
-    env:
-      NEXT_VERSION: "1.0.0"
-
     steps:
     - name: Setup Chrome
       # You may pin to the exact commit or the version.
@@ -27,18 +24,9 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 6.0.x
-    - name: Get Next Version Number
-      run: |
-        next_ver=$(bash ./build/get_next_package_version.sh)
-        echo "Next version is $next_ver"
-        echo "NEXT_VERSION=$next_ver" >> $GITHUB_ENV        
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore --configuration Release
     - name: Test
       run: dotnet test --no-build --verbosity normal --configuration Release
-    - name: Package
-      run: dotnet pack --configuration Release -p:PackageVersion=$NEXT_VERSION
-    - name: Publish
-      run: dotnet nuget push ./PuppeteerSharp.Replay/bin/Release/PuppeteerSharp.Replay*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
