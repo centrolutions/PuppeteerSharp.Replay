@@ -38,6 +38,6 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal --configuration Release
     - name: Package
-      run: dotnet pack --configuration Release -p:PackageVersion=$next_version
+      run: dotnet pack --configuration Release -p:PackageVersion="$next_version"
     - name: Publish
       run: dotnet nuget push ./PuppeteerSharp.Replay/bin/Release/PuppeteerSharp.Replay*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
