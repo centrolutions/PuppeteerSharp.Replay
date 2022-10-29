@@ -28,7 +28,7 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Get Next Version Number
-      run: next_version=$(bash ./build/get_next_package_version.sh}
+      run: next_version=${bash ./build/get_next_package_version.sh}
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
