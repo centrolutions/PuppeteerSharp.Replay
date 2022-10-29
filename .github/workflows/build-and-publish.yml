@@ -27,6 +27,8 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 6.0.x
+    - name: Get Next Version Number
+      run: next_version=$(bash ./build/get_next_package_version.sh}
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
@@ -34,6 +36,6 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal --configuration Release
     - name: Package
-      run: dotnet pack --configuration Release
+      run: dotnet pack --configuration Release -p:PackageVersion=$next_version
     - name: Publish
       run: dotnet nuget push ./PuppeteerSharp.Replay/bin/Release/PuppeteerSharp.Replay*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
