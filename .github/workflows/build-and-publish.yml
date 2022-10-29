@@ -30,10 +30,10 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build --no-restore --configuration Release
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test --no-build --verbosity normal --configuration Release
     - name: Package
-      run: dotnet pack
+      run: dotnet pack --configuration Release
     - name: Publish
-      run: dotnet nuget push PuppeteerSharp.Replay*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+      run: dotnet nuget push ./PuppeteerSharp.Replay/bin/Release/PuppeteerSharp.Replay*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
