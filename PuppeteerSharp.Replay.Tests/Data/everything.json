@@ -12,11 +12,11 @@
     },
     {
       "type": "navigate",
-      "url": "http://localhost:5209/everything.html",
+      "url": "http://localhost:5000/everything.html",
       "assertedEvents": [
         {
           "type": "navigation",
-          "url": "http://localhost:5209/everything.html",
+          "url": "http://localhost:5000/everything.html",
           "title": ""
         }
       ]
