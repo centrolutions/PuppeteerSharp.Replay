@@ -5,7 +5,9 @@ VisualStudioVersion = 17.3.32922.545
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PuppeteerSharp.Replay", "PuppeteerSharp.Replay\PuppeteerSharp.Replay.csproj", "{F599FB01-3719-480E-9EAA-CCCDC05D8EB4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PuppeteerSharp.Replay.Tests", "PuppeteerSharp.Replay.Tests\PuppeteerSharp.Replay.Tests.csproj", "{BE3B5404-D759-44FD-8874-77AAC7B6C7DE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PuppeteerSharp.Replay.Tests", "PuppeteerSharp.Replay.Tests\PuppeteerSharp.Replay.Tests.csproj", "{BE3B5404-D759-44FD-8874-77AAC7B6C7DE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestServer", "TestServer\TestServer.csproj", "{4B1254F1-4E3C-4D63-B499-2AF4A5023CAD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{BE3B5404-D759-44FD-8874-77AAC7B6C7DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BE3B5404-D759-44FD-8874-77AAC7B6C7DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BE3B5404-D759-44FD-8874-77AAC7B6C7DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4B1254F1-4E3C-4D63-B499-2AF4A5023CAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B1254F1-4E3C-4D63-B499-2AF4A5023CAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B1254F1-4E3C-4D63-B499-2AF4A5023CAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B1254F1-4E3C-4D63-B499-2AF4A5023CAD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
