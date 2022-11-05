@@ -10,10 +10,10 @@ namespace PuppeteerSharp.Replay
 {
     public class RunnerExtension : IRunnerExtension
     {
-        private readonly IBrowser _Browser;
-        private readonly IPage _Page;
-        private readonly int? _Timeout;
-        private readonly string[] _TypeableInputTypes = new string[]
+        readonly IBrowser _Browser;
+        readonly IPage _Page;
+        readonly int? _Timeout;
+        readonly string[] _TypeableInputTypes = new string[]
         {
             "textarea",
             "text",
@@ -23,6 +23,15 @@ namespace PuppeteerSharp.Replay
             "password",
             "number",
             "email",
+        };
+        readonly Dictionary<string, MouseButton> _MouseButtonMap = new Dictionary<string, MouseButton>()
+        {
+            { string.Empty, MouseButton.Left },
+            { "primary", MouseButton.Left },
+            { "secondary", MouseButton.Right },
+            { "auxiliary", MouseButton.Middle },
+            //{ "back",  }
+            //{ "forward",  }
         };
 
         public RunnerExtension(IBrowser browser, IPage page, int? timeout)
@@ -139,12 +148,12 @@ namespace PuppeteerSharp.Replay
             var options = new ClickOptions()
             {
                 OffSet = new Offset(step.OffsetX, step.OffsetY),
-                ClickCount = clickCount
+                ClickCount = clickCount,
+                Button = _MouseButtonMap[step.Button ?? string.Empty]
             };
             if (clickCount == 1)
                 options.Delay = step.Duration ?? 0;
 
-            //TODO: handle mouse button from step
             await element.ClickAsync(options);
         }
 
