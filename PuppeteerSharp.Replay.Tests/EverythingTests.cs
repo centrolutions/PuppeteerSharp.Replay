@@ -10,7 +10,16 @@ namespace PuppeteerSharp.Replay.Tests
     public class EverythingTests
     {
         UserFlow _Flow;
-        const string _ExpectedLog = "window dimensions 1280x810\r\nclick targetId=button button=0 value=\r\nclick targetId=button button=0 value=\r\ndblclick targetId=button button=0 value=\r\nchange targetId=input button=undefined value=test\r\ncontextmenu targetId=input button=2 value=test\r\nmouseenter targetId=hover button=0 value=";
+        readonly string[] _ExpectedLog = new string[7]
+        {
+            "window dimensions 900x700",
+            "click targetId=button button=0 value=",
+            "click targetId=button button=0 value=",
+            "dblclick targetId=button button=0 value=",
+            "change targetId=input button=undefined value=test",
+            "contextmenu targetId=input button=2 value=test",
+            "mouseenter targetId=hover button=0 value="
+        };
 
         public EverythingTests()
         {
@@ -36,8 +45,9 @@ namespace PuppeteerSharp.Replay.Tests
 
             var logPre = await page.QuerySelectorAsync("#log");
             var logText = await logPre.EvaluateFunctionAsync<string>("e => e.innerText");
+            var logLines = logText.ReplaceLineEndings().Split(Environment.NewLine);
 
-            Assert.Equal(_ExpectedLog, logText);
+            Assert.Equal(_ExpectedLog, logLines);
         }
     }
 }

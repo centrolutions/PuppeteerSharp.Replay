@@ -96,7 +96,7 @@
     {
       "type": "waitForElement",
       "target": "main",
-      "selectors": ["button"],
+      "selectors": [ [ "button" ] ],
       "count": 2
     }
   ]
