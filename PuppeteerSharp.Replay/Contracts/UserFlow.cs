@@ -49,6 +49,8 @@ namespace PuppeteerSharp.Replay.Contracts
 
         //keyDown
         public string Key { get; set; }
+
+        public string Expression { get; set; }
     }
 
     public class AssertedEvent

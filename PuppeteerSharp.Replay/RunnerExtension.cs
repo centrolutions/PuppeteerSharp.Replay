@@ -91,7 +91,15 @@ namespace PuppeteerSharp.Replay
                 case StepType.Hover:
                     await Task.WhenAll(eventTasks.Append(Hover(step, timeout)));
                     break;
+                case StepType.WaitForExpression:
+                    await Task.WhenAll(eventTasks.Append(WaitForExpression(step, timeout)));
+                    break;
             }
+        }
+
+        async Task WaitForExpression(Step step, int timeout)
+        {
+            await _Page.WaitForExpressionAsync(step.Expression, new WaitForFunctionOptions() { Timeout = timeout });
         }
 
         async Task Hover(Step step, int timeout)
