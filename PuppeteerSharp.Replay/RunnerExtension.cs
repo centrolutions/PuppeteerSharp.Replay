@@ -88,7 +88,16 @@ namespace PuppeteerSharp.Replay
                 case StepType.KeyUp:
                     await Task.WhenAll(eventTasks.Append(KeyUp(step)));
                     break;
+                case StepType.Hover:
+                    await Task.WhenAll(eventTasks.Append(Hover(step, timeout)));
+                    break;
             }
+        }
+
+        async Task Hover(Step step, int timeout)
+        {
+            var element = await WaitForSelectors(step.Selectors, timeout, true);
+            await element.HoverAsync();
         }
 
         async Task KeyDown(Step step)
