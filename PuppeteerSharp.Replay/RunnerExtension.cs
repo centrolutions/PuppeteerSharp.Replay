@@ -33,6 +33,12 @@ namespace PuppeteerSharp.Replay
             //{ "back",  }
             //{ "forward",  }
         };
+        readonly Dictionary<string, Func<int, int, bool>> _ComparisonFunctions = new Dictionary<string, Func<int, int, bool>>()
+        {
+            { ">=", (a, b) => { return a >= b; } },
+            { "==", (a, b) => { return a == b; } },
+            { "<=", (a, b) => { return a <= b; } }
+        };
 
         public RunnerExtension(IBrowser browser, IPage page, int? timeout)
         {
@@ -94,7 +100,18 @@ namespace PuppeteerSharp.Replay
                 case StepType.WaitForExpression:
                     await Task.WhenAll(eventTasks.Append(WaitForExpression(step, timeout)));
                     break;
+                case StepType.WaitForElement:
+                    await Task.WhenAll(eventTasks.Append(WaitForElement(step, timeout)));
+                    break;
             }
+        }
+
+        async Task<bool> WaitForElement(Step step, int timeout)
+        {
+            var elements = await WaitForAllSelectors(step.Selectors, timeout, true);
+            var comparison = _ComparisonFunctions[step.Operator ?? ">="];
+            var result = comparison(elements.Count(), step.Count);
+            return result;
         }
 
         async Task WaitForExpression(Step step, int timeout)
@@ -222,6 +239,19 @@ namespace PuppeteerSharp.Replay
             return events;
         }
 
+        async Task<IEnumerable<IElementHandle>> WaitForAllSelectors(string[][] selectors, int timeout, bool visible)
+        {
+            var elements = new List<IElementHandle>();
+            foreach (var selector in selectors)
+            {
+                var result = await WaitForAllSelector(selector, timeout, visible);
+                if (result != null && result.Any())
+                    elements.AddRange(result);
+            }
+
+            return elements;
+        }
+
         async Task<IElementHandle> WaitForSelectors(string[][] selectors, int timeout, bool visible)
         {
             foreach (var selector in selectors)
@@ -231,6 +261,18 @@ namespace PuppeteerSharp.Replay
                     return result;
             }
             throw new Exception("Could not find element for selectors: " + string.Join(";", selectors.Select(x => string.Join(">>", x))));
+        }
+
+        async Task<IEnumerable<IElementHandle>> WaitForAllSelector(string[] selectors, int timeout, bool visible)
+        {
+            var results = new List<IElementHandle>();
+            foreach (var selector in selectors)
+            {
+                var elements = await _Page.QuerySelectorAllAsync(selector);
+                if (elements != null && elements.Any())
+                    results.AddRange(elements);
+            }
+            return results;
         }
 
         async Task<IElementHandle> WaitForSelector(string[] selectors, int timeout, bool visible)

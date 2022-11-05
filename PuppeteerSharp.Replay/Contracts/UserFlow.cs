@@ -51,6 +51,10 @@ namespace PuppeteerSharp.Replay.Contracts
         public string Key { get; set; }
 
         public string Expression { get; set; }
+
+        //waitForElement
+        public int Count { get; set; }
+        public string Operator { get; set; }
     }
 
     public class AssertedEvent
