@@ -106,12 +106,24 @@ namespace PuppeteerSharp.Replay
             }
         }
 
-        async Task<bool> WaitForElement(Step step, int timeout)
+        async Task WaitForElement(Step step, int timeout)
         {
-            var elements = await WaitForAllSelectors(step.Selectors, timeout, true);
-            var comparison = _ComparisonFunctions[step.Operator ?? ">="];
-            var result = comparison(elements.Count(), step.Count);
-            return result;
+            var timeoutTask = Task.Delay(timeout);
+            var result = false;
+            var op = step.Operator ?? ">=";
+            var searchTask = Task.Run(async () =>
+            {
+                while (!result)
+                {
+                    var elements = await WaitForAllSelectors(step.Selectors, timeout, true);
+                    var comparison = _ComparisonFunctions[op];
+                    result = comparison(elements.Count(), step.Count);
+                }
+            });
+
+            var completedTaskIndex = await Task.WhenAny(timeoutTask, searchTask);
+            if (!result)
+                throw new Exception($"Could not find {op}{step.Count} elements for selectors: " + string.Join(";", step.Selectors.Select(x => string.Join(">>", x))));
         }
 
         async Task WaitForExpression(Step step, int timeout)
@@ -216,7 +228,7 @@ namespace PuppeteerSharp.Replay
 
         int GetTimeoutForStep(Step step, UserFlow flow)
         {
-            return step.Timeout ?? flow.Timeout ?? _Timeout ?? 0;
+            return step.Timeout ?? flow.Timeout ?? _Timeout ?? 5000;
         }
 
         IEnumerable<Task> WaitForEvents(Step step, int timeout)
