@@ -20,7 +20,9 @@ namespace PuppeteerSharp.Replay.Tests
         public async Task CanRunFlow()
         {
             var fetcher = new BrowserFetcher();
-            await fetcher.DownloadAsync();
+            if (!fetcher.LocalRevisions().Any())
+                await fetcher.DownloadAsync();
+
             var options = new LaunchOptions()
             {
                 Headless = true,
