@@ -2,6 +2,7 @@
 using PuppeteerSharp.Replay.Contracts;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,10 +11,10 @@ namespace PuppeteerSharp.Replay
 {
     public class RunnerExtension : IRunnerExtension
     {
-        private readonly IBrowser _Browser;
-        private readonly IPage _Page;
-        private readonly int? _Timeout;
-        private readonly string[] _TypeableInputTypes = new string[]
+        readonly IBrowser _Browser;
+        readonly IPage _Page;
+        readonly int? _Timeout;
+        readonly string[] _TypeableInputTypes = new string[]
         {
             "textarea",
             "text",
@@ -23,6 +24,21 @@ namespace PuppeteerSharp.Replay
             "password",
             "number",
             "email",
+        };
+        readonly Dictionary<string, MouseButton> _MouseButtonMap = new Dictionary<string, MouseButton>()
+        {
+            { string.Empty, MouseButton.Left },
+            { "primary", MouseButton.Left },
+            { "secondary", MouseButton.Right },
+            { "auxiliary", MouseButton.Middle },
+            //{ "back",  }
+            //{ "forward",  }
+        };
+        readonly Dictionary<string, Func<int, int, bool>> _ComparisonFunctions = new Dictionary<string, Func<int, int, bool>>()
+        {
+            { ">=", (a, b) => { return a >= b; } },
+            { "==", (a, b) => { return a == b; } },
+            { "<=", (a, b) => { return a <= b; } }
         };
 
         public RunnerExtension(IBrowser browser, IPage page, int? timeout)
@@ -37,9 +53,17 @@ namespace PuppeteerSharp.Replay
             return Task.CompletedTask;
         }
 
-        public Task AfterEachStep(Step step, UserFlow flow)
+        public async Task AfterEachStep(Step step, UserFlow flow)
         {
-            return Task.CompletedTask;
+            var folder = $"screenshots{Path.DirectorySeparatorChar}{flow.Title.Replace(" ", "_")}";
+            var filename = $"{Array.IndexOf(flow.Steps, step)}.jpg";
+            if (!Directory.Exists("screenshots"))
+                Directory.CreateDirectory("screenshots");
+            if (!Directory.Exists(folder))
+                Directory.CreateDirectory(folder);
+
+            await _Page.ScreenshotAsync(Path.Combine(folder, filename));
+            //return Task.CompletedTask;
         }
 
         public Task BeforeAllSteps(UserFlow flow)
@@ -79,7 +103,47 @@ namespace PuppeteerSharp.Replay
                 case StepType.KeyUp:
                     await Task.WhenAll(eventTasks.Append(KeyUp(step)));
                     break;
+                case StepType.Hover:
+                    await Task.WhenAll(eventTasks.Append(Hover(step, timeout)));
+                    break;
+                case StepType.WaitForExpression:
+                    await Task.WhenAll(eventTasks.Append(WaitForExpression(step, timeout)));
+                    break;
+                case StepType.WaitForElement:
+                    await Task.WhenAll(eventTasks.Append(WaitForElement(step, timeout)));
+                    break;
             }
+        }
+
+        async Task WaitForElement(Step step, int timeout)
+        {
+            var timeoutTask = Task.Delay(timeout);
+            var result = false;
+            var op = step.Operator ?? ">=";
+            var searchTask = Task.Run(async () =>
+            {
+                while (!result)
+                {
+                    var elements = await WaitForAllSelectors(step.Selectors, timeout, true);
+                    var comparison = _ComparisonFunctions[op];
+                    result = comparison(elements.Count(), step.Count);
+                }
+            });
+
+            var completedTaskIndex = await Task.WhenAny(timeoutTask, searchTask);
+            if (!result)
+                throw new Exception($"Could not find {op}{step.Count} elements for selectors: " + string.Join(";", step.Selectors.Select(x => string.Join(">>", x))));
+        }
+
+        async Task WaitForExpression(Step step, int timeout)
+        {
+            await _Page.WaitForExpressionAsync(step.Expression, new WaitForFunctionOptions() { Timeout = timeout });
+        }
+
+        async Task Hover(Step step, int timeout)
+        {
+            var element = await WaitForSelectors(step.Selectors, timeout, true);
+            await element.HoverAsync();
         }
 
         async Task KeyDown(Step step)
@@ -139,22 +203,22 @@ namespace PuppeteerSharp.Replay
             var options = new ClickOptions()
             {
                 OffSet = new Offset(step.OffsetX, step.OffsetY),
-                ClickCount = clickCount
+                ClickCount = clickCount,
+                Button = _MouseButtonMap[step.Button ?? string.Empty]
             };
             if (clickCount == 1)
                 options.Delay = step.Duration ?? 0;
 
-            //TODO: handle mouse button from step
             await element.ClickAsync(options);
         }
 
-        async Task Navigate(Step step, int timeout)
+        Task Navigate(Step step, int timeout)
         {
             var options = new NavigationOptions()
             {
                 Timeout = timeout,
             };
-            await _Page.GoToAsync(step.Url, options);
+            return _Page.GoToAsync(step.Url, options);
         }
 
         async Task SetViewport(Step step)
@@ -173,7 +237,7 @@ namespace PuppeteerSharp.Replay
 
         int GetTimeoutForStep(Step step, UserFlow flow)
         {
-            return step.Timeout ?? flow.Timeout ?? _Timeout ?? 0;
+            return step.Timeout ?? flow.Timeout ?? _Timeout ?? 5000;
         }
 
         IEnumerable<Task> WaitForEvents(Step step, int timeout)
@@ -181,12 +245,18 @@ namespace PuppeteerSharp.Replay
             if (step.AssertedEvents == null || step.AssertedEvents.Length <= 0) return new Task[] { };
 
             var events = new List<Task>();
+            var waitNavOptions = new NavigationOptions()
+            {
+                Timeout = timeout,
+                WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.Load },
+            };
+
             foreach (var ev in step.AssertedEvents)
             {
                 switch (ev.Type)
                 {
                     case AssertedEventType.Navigation:
-                        events.Add(_Page.WaitForNavigationAsync(new NavigationOptions() { Timeout = timeout }));
+                        events.Add(_Page.WaitForNavigationAsync(waitNavOptions));
                         break;
                     default:
                         throw new Exception($"Event type {ev.Type} is not supported.");
@@ -194,6 +264,19 @@ namespace PuppeteerSharp.Replay
             }
 
             return events;
+        }
+
+        async Task<IEnumerable<IElementHandle>> WaitForAllSelectors(string[][] selectors, int timeout, bool visible)
+        {
+            var elements = new List<IElementHandle>();
+            foreach (var selector in selectors)
+            {
+                var result = await WaitForAllSelector(selector, timeout, visible);
+                if (result != null && result.Any())
+                    elements.AddRange(result);
+            }
+
+            return elements;
         }
 
         async Task<IElementHandle> WaitForSelectors(string[][] selectors, int timeout, bool visible)
@@ -207,14 +290,34 @@ namespace PuppeteerSharp.Replay
             throw new Exception("Could not find element for selectors: " + string.Join(";", selectors.Select(x => string.Join(">>", x))));
         }
 
-        async Task<IElementHandle> WaitForSelector(string[] selectors, int timeout, bool visible)
+        async Task<IEnumerable<IElementHandle>> WaitForAllSelector(string[] selectors, int timeout, bool visible)
         {
+            var results = new List<IElementHandle>();
             foreach (var selector in selectors)
             {
-                return await _Page.WaitForSelectorAsync(selector, new WaitForSelectorOptions() { Timeout = timeout, Visible = visible });
+                var elements = await _Page.QuerySelectorAllAsync(selector);
+                if (elements != null && elements.Any())
+                    results.AddRange(elements);
+            }
+            return results;
+        }
+
+        async Task<IElementHandle> WaitForSelector(string[] selectors, int timeout, bool visible)
+        {
+            var selectorTasks = new List<Task<IElementHandle>>();
+            var selectorOptions = new WaitForSelectorOptions()
+            {
+                Timeout = timeout,
+                Visible = visible,
+            };
+            foreach (var selector in selectors)
+            {
+                selectorTasks.Add(_Page.WaitForSelectorAsync(selector, selectorOptions));
+                //return await _Page.WaitForSelectorAsync(selector, new WaitForSelectorOptions() { Timeout = timeout, Visible = visible });
             }
 
-            return null;
+            var finishedTask = await Task.WhenAny(selectorTasks);
+            return finishedTask.Result;
         }
     }
 }

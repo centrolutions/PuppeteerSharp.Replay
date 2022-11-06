@@ -37,10 +37,18 @@ jobs:
     - name: Build
       run: dotnet build --no-restore --configuration Release
     - name: Start Test Server
-      run: dotnet ./TestServer/bin/Release/net6.0/TestServer.dll &
+      run: |
+        cd TestServer
+        dotnet ./bin/Release/net6.0/TestServer.dll &
     - name: Test
       run: dotnet test --no-build --verbosity normal --configuration Release
     - name: Package
       run: dotnet pack --configuration Release -p:PackageVersion=$NEXT_VERSION
     - name: Publish
       run: dotnet nuget push ./PuppeteerSharp.Replay/bin/Release/PuppeteerSharp.Replay*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+    - name: Collect Artifacts
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: screenshots
+        path: PuppeteerSharp.Replay.Tests/bin/Release/net6.0/screenshots/

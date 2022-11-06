@@ -7,29 +7,24 @@ using System.Threading.Tasks;
 
 namespace PuppeteerSharp.Replay.Tests
 {
+    [Collection("Puppeteer")]
     public class RunnerExtensionTests
     {
+        private readonly PuppeteerFixture _Fixture;
         UserFlow _Flow;
 
-        public RunnerExtensionTests()
+        public RunnerExtensionTests(PuppeteerFixture fixture)
         {
             _Flow = UserFlow.Parse(File.ReadAllText($"Data{Path.DirectorySeparatorChar}UserFlowExample.json"));
+            _Fixture = fixture;
         }
 
         [Fact]
         public async Task CanRunFlow()
         {
-            var fetcher = new BrowserFetcher();
-            await fetcher.DownloadAsync();
-            var options = new LaunchOptions()
-            {
-                Headless = true,
-                DefaultViewport = new ViewPortOptions() { Width = 1280, Height = 810 }
-            };
-            using IBrowser browser = await Puppeteer.LaunchAsync(options);
-            using IPage page = await browser.NewPageAsync();
+            using IPage page = await _Fixture.Browser.NewPageAsync();
 
-            var sut = new RunnerExtension(browser, page, null);
+            var sut = new RunnerExtension(_Fixture.Browser, page, 0);
             var runner = await Runner.CreateRunner(_Flow, sut);
             await runner.Run();
 
