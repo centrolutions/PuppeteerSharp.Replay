@@ -295,12 +295,20 @@ namespace PuppeteerSharp.Replay
 
         async Task<IElementHandle> WaitForSelector(string[] selectors, int timeout, bool visible)
         {
+            var selectorTasks = new List<Task<IElementHandle>>();
+            var selectorOptions = new WaitForSelectorOptions()
+            {
+                Timeout = timeout,
+                Visible = visible,
+            };
             foreach (var selector in selectors)
             {
-                return await _Page.WaitForSelectorAsync(selector, new WaitForSelectorOptions() { Timeout = timeout, Visible = visible });
+                selectorTasks.Add(_Page.WaitForSelectorAsync(selector, selectorOptions));
+                //return await _Page.WaitForSelectorAsync(selector, new WaitForSelectorOptions() { Timeout = timeout, Visible = visible });
             }
 
-            return null;
+            var finishedTask = await Task.WhenAny(selectorTasks);
+            return finishedTask.Result;
         }
     }
 }
