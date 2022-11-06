@@ -203,13 +203,13 @@ namespace PuppeteerSharp.Replay
             await element.ClickAsync(options);
         }
 
-        async Task Navigate(Step step, int timeout)
+        Task Navigate(Step step, int timeout)
         {
             var options = new NavigationOptions()
             {
                 Timeout = timeout,
             };
-            await _Page.GoToAsync(step.Url, options);
+            return _Page.GoToAsync(step.Url, options);
         }
 
         async Task SetViewport(Step step)
@@ -236,12 +236,18 @@ namespace PuppeteerSharp.Replay
             if (step.AssertedEvents == null || step.AssertedEvents.Length <= 0) return new Task[] { };
 
             var events = new List<Task>();
+            var waitNavOptions = new NavigationOptions()
+            {
+                Timeout = timeout,
+                WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.Load },
+            };
+
             foreach (var ev in step.AssertedEvents)
             {
                 switch (ev.Type)
                 {
                     case AssertedEventType.Navigation:
-                        events.Add(_Page.WaitForNavigationAsync(new NavigationOptions() { Timeout = timeout }));
+                        events.Add(_Page.WaitForNavigationAsync(waitNavOptions));
                         break;
                     default:
                         throw new Exception($"Event type {ev.Type} is not supported.");
