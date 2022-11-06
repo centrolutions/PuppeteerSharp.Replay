@@ -33,6 +33,7 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal --configuration Release
     - name: Collect Artifacts
+      if: always()
       uses: actions/upload-artifact@v3
       with:
         name: my-artifact
