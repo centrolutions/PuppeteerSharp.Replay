@@ -2,6 +2,7 @@
 using PuppeteerSharp.Replay.Contracts;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -52,9 +53,17 @@ namespace PuppeteerSharp.Replay
             return Task.CompletedTask;
         }
 
-        public Task AfterEachStep(Step step, UserFlow flow)
+        public async Task AfterEachStep(Step step, UserFlow flow)
         {
-            return Task.CompletedTask;
+            var folder = $"screenshots{Path.DirectorySeparatorChar}{flow.Title.Replace(" ", "_")}";
+            var filename = $"{Array.IndexOf(flow.Steps, step)}.jpg";
+            if (!Directory.Exists("screenshots"))
+                Directory.CreateDirectory("screenshots");
+            if (!Directory.Exists(folder))
+                Directory.CreateDirectory(folder);
+
+            await _Page.ScreenshotAsync(Path.Combine(folder, filename));
+            //return Task.CompletedTask;
         }
 
         public Task BeforeAllSteps(UserFlow flow)
