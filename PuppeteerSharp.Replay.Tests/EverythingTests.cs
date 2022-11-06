@@ -34,7 +34,7 @@ namespace PuppeteerSharp.Replay.Tests
         {
             using IPage page = await _Fixture.Browser.NewPageAsync();
 
-            var sut = new RunnerExtension(_Fixture.Browser, page, 0);
+            var sut = new RunnerExtension(_Fixture.Browser, page, 5000);
             var runner = await Runner.CreateRunner(_Flow, sut);
             await runner.Run();
 
