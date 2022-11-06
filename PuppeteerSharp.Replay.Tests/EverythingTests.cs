@@ -29,9 +29,9 @@ namespace PuppeteerSharp.Replay.Tests
         [Fact]
         public async Task CanRunEverything()
         {
-            var fetcher = new BrowserFetcher();
-            if (!fetcher.LocalRevisions().Any())
-                await fetcher.DownloadAsync();
+            //var fetcher = new BrowserFetcher();
+            //if (!fetcher.LocalRevisions().Any())
+            //    await fetcher.DownloadAsync();
 
             var options = new LaunchOptions()
             {
