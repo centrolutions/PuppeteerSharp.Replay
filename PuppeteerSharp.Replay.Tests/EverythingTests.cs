@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace PuppeteerSharp.Replay.Tests
 {
+    [Collection("Puppeteer")]
     public class EverythingTests
     {
         UserFlow _Flow;
@@ -21,7 +22,7 @@ namespace PuppeteerSharp.Replay.Tests
             "mouseenter targetId=hover button=0 value="
         };
 
-        public EverythingTests()
+        public EverythingTests(PuppeteerFixture fixture)
         {
             _Flow = UserFlow.Parse(File.ReadAllText($"Data{Path.DirectorySeparatorChar}everything.json"));
         }
@@ -29,10 +30,6 @@ namespace PuppeteerSharp.Replay.Tests
         [Fact]
         public async Task CanRunEverything()
         {
-            //var fetcher = new BrowserFetcher();
-            //if (!fetcher.LocalRevisions().Any())
-            //    await fetcher.DownloadAsync();
-
             var options = new LaunchOptions()
             {
                 Headless = true,
