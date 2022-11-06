@@ -8,6 +8,8 @@ namespace PuppeteerSharp.Replay.Tests
 {
     public class PuppeteerFixture : IDisposable
     {
+        public IBrowser Browser { get; set; }
+
         public PuppeteerFixture()
         {
             var fetcher = new BrowserFetcher();
@@ -16,6 +18,13 @@ namespace PuppeteerSharp.Replay.Tests
                 fetcher.DownloadAsync().Wait();
             }
             finally { }
+
+            var options = new LaunchOptions()
+            {
+                Headless = true,
+                DefaultViewport = new ViewPortOptions() { Width = 1280, Height = 810 }
+            };
+            Browser = Puppeteer.LaunchAsync(options).Result;
         }
 
         public void Dispose()

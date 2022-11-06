@@ -21,24 +21,20 @@ namespace PuppeteerSharp.Replay.Tests
             "contextmenu targetId=input button=2 value=test",
             "mouseenter targetId=hover button=0 value="
         };
+        private readonly PuppeteerFixture _Fixture;
 
         public EverythingTests(PuppeteerFixture fixture)
         {
             _Flow = UserFlow.Parse(File.ReadAllText($"Data{Path.DirectorySeparatorChar}everything.json"));
+            _Fixture = fixture;
         }
 
         [Fact]
         public async Task CanRunEverything()
         {
-            var options = new LaunchOptions()
-            {
-                Headless = true,
-                DefaultViewport = new ViewPortOptions() { Width = 1280, Height = 810 }
-            };
-            using IBrowser browser = await Puppeteer.LaunchAsync(options);
-            using IPage page = await browser.NewPageAsync();
+            using IPage page = await _Fixture.Browser.NewPageAsync();
 
-            var sut = new RunnerExtension(browser, page, null);
+            var sut = new RunnerExtension(_Fixture.Browser, page, null);
             var runner = await Runner.CreateRunner(_Flow, sut);
             await runner.Run();
 
