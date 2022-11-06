@@ -29,7 +29,9 @@ jobs:
     - name: Build
       run: dotnet build --no-restore --configuration Release
     - name: Start Test Server
-      run: dotnet ./TestServer/bin/Release/net6.0/TestServer.dll &
+      run: |
+        cd TestServer
+        dotnet ./bin/Release/net6.0/TestServer.dll &
     - name: Test
       run: dotnet test --no-build --verbosity normal --configuration Release
     - name: Collect Artifacts
