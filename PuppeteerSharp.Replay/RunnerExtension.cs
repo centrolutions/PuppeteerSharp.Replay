@@ -14,6 +14,7 @@ namespace PuppeteerSharp.Replay
         readonly IBrowser _Browser;
         readonly IPage _Page;
         readonly int? _Timeout;
+        private readonly bool _ScreenshotAfterEachStep;
         readonly string[] _TypeableInputTypes = new string[]
         {
             "textarea",
@@ -41,11 +42,12 @@ namespace PuppeteerSharp.Replay
             { "<=", (a, b) => { return a <= b; } }
         };
 
-        public RunnerExtension(IBrowser browser, IPage page, int? timeout)
+        public RunnerExtension(IBrowser browser, IPage page, int? timeout, bool screenshotAfterEachStep = true)
         {
             _Browser = browser;
             _Page = page;
             _Timeout = timeout;
+            _ScreenshotAfterEachStep = screenshotAfterEachStep;
         }
 
         public Task AfterAllSteps(UserFlow flow)
@@ -55,15 +57,11 @@ namespace PuppeteerSharp.Replay
 
         public async Task AfterEachStep(Step step, UserFlow flow)
         {
-            var folder = $"screenshots{Path.DirectorySeparatorChar}{flow.Title.Replace(" ", "_")}";
-            var filename = $"{Array.IndexOf(flow.Steps, step)}.jpg";
-            if (!Directory.Exists("screenshots"))
-                Directory.CreateDirectory("screenshots");
-            if (!Directory.Exists(folder))
-                Directory.CreateDirectory(folder);
+            if (!_ScreenshotAfterEachStep)
+                return;
 
-            await _Page.ScreenshotAsync(Path.Combine(folder, filename));
-            //return Task.CompletedTask;
+            string filePath = CreateScreenshotFilePath(step, flow);
+            await _Page.ScreenshotAsync(filePath);
         }
 
         public Task BeforeAllSteps(UserFlow flow)
@@ -174,6 +172,20 @@ namespace PuppeteerSharp.Replay
             {
                 await ChangeElementValue(step, element);
             }
+        }
+
+        static string CreateScreenshotFilePath(Step step, UserFlow flow)
+        {
+            string basePath = "screenshots";
+            var folder = $"{basePath}{Path.DirectorySeparatorChar}{flow.Title.Replace(" ", "_")}";
+            var filename = $"{Array.IndexOf(flow.Steps, step)}.jpg";
+            if (!Directory.Exists(basePath))
+                Directory.CreateDirectory(basePath);
+            if (!Directory.Exists(folder))
+                Directory.CreateDirectory(folder);
+
+            var filePath = Path.Combine(folder, filename);
+            return filePath;
         }
 
         async Task ChangeElementValue(Step step, IElementHandle element)
