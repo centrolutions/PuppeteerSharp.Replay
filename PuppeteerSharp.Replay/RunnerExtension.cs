@@ -144,11 +144,11 @@ namespace PuppeteerSharp.Replay
             {
                 await ScrollIntoViewIfNeeded(step.Selectors, timeout);
                 var element = await WaitForSelectors(step.Selectors, timeout, true);
-                await element.EvaluateFunctionAsync("(e, x, y) => { e.scrollTop = y; e.scrollLeft = x; }", step.OffsetX, step.OffsetY);
+                await _Page.WaitForFunctionAsync("(e, x, y) => { e.scrollTop = y; e.scrollLeft = x; return true; }", element, step.OffsetX, step.OffsetY);
             }
             else
             {
-                await _Page.EvaluateFunctionAsync("(x, y) => { window.scroll(x, y); }", step.OffsetX, step.OffsetY);
+                await _Page.WaitForFunctionAsync("(x, y) => { window.scroll(x, y); return true; }", step.OffsetX, step.OffsetY);
             }
         }
 
