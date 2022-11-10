@@ -30,5 +30,67 @@ namespace PuppeteerSharp.Replay.Tests
 
             Assert.True(true);
         }
+
+        [Fact]
+        public async Task CanReplayScrollEvents()
+        {
+            using IPage page = await _Fixture.Browser.NewPageAsync();
+
+            var sut = new RunnerExtension(_Fixture.Browser, page, 0);
+            UserFlow flow = SetupScrollFlow();
+
+            var runner = await Runner.CreateRunner(flow, sut);
+            await runner.Run();
+
+            var x = await page.EvaluateFunctionAsync<int>("() => window.pageXOffset");
+            var y = await page.EvaluateFunctionAsync<int>("() => window.pageYOffset");
+            var top = await page.EvaluateFunctionAsync<int>("() => document.querySelector('#overflow')?.scrollTop");
+            var left = await page.EvaluateFunctionAsync<int>("() => document.querySelector('#overflow')?.scrollLeft");
+
+            Assert.Equal(40, x);
+            Assert.Equal(40, y);
+            Assert.Equal(40, top);
+            Assert.Equal(0, left);
+        }
+
+        static UserFlow SetupScrollFlow()
+        {
+            var steps = new List<Step>()
+            {
+                new Step()
+                {
+                    Type = StepType.Navigate,
+                    Url = "http://localhost:5000/scroll.html"
+                },
+                new Step()
+                {
+                    Type = StepType.SetViewport,
+                    Width = 800,
+                    Height = 600,
+                    IsLandscape = false,
+                    IsMobile = false,
+                    DeviceScaleFactor = 1,
+                    HasTouch = false
+                },
+                new Step()
+                {
+                    Type = StepType.Scroll,
+                    Target = "main",
+                    Selectors = new string[][] { new string[] { "body > div:nth-child(1)" } },
+                    OffsetX = 0,
+                    OffsetY = 40,
+                },
+                new Step()
+                {
+                    Type = StepType.Scroll,
+                    Target = "main",
+                    OffsetX = 40,
+                    OffsetY = 40,
+                }
+            };
+            var flow = new UserFlow() { Title = "Scroll" };
+            flow.Steps = steps.ToArray();
+            return flow;
+        }
     }
 }

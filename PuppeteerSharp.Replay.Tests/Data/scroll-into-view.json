@@ -1,0 +1,39 @@
+{
+  "title": "Scroll into view",
+  "steps": [
+    {
+      "type": "setViewport",
+      "width": 1041,
+      "height": 809,
+      "deviceScaleFactor": 1,
+      "isMobile": false,
+      "hasTouch": false,
+      "isLandscape": false
+    },
+    {
+      "type": "navigate",
+      "url": "http://localhost:5000/scroll-into-view.html",
+      "assertedEvents": [
+        {
+          "type": "navigation",
+          "url": "http://localhost:5000/scroll-into-view.html",
+          "title": ""
+        }
+      ]
+    },
+    {
+      "type": "click",
+      "target": "main",
+      "selectors": [
+        [
+          "aria/click"
+        ],
+        [
+          "body > button"
+        ]
+      ],
+      "offsetY": 9,
+      "offsetX": 28
+    }
+  ]
+}

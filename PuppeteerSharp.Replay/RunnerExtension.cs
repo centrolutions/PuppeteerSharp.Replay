@@ -2,9 +2,11 @@
 using PuppeteerSharp.Replay.Contracts;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PuppeteerSharp.Replay
@@ -14,6 +16,7 @@ namespace PuppeteerSharp.Replay
         readonly IBrowser _Browser;
         readonly IPage _Page;
         readonly int? _Timeout;
+        private readonly bool _ScreenshotAfterEachStep;
         readonly string[] _TypeableInputTypes = new string[]
         {
             "textarea",
@@ -40,12 +43,33 @@ namespace PuppeteerSharp.Replay
             { "==", (a, b) => { return a == b; } },
             { "<=", (a, b) => { return a <= b; } }
         };
+        const string ScrollIntoViewJSFunction = @"async (e) => {
+            e.scrollIntoView({behavior:'smooth', block:'nearest', inline:'nearest'});
+            currPageXOffset = window.pageXOffset;
+            currPageYOffset = window.pageYOffset;
+            var isDoneScrolling = false;
+            var scrollDone = setInterval(function () {
+                if ( currPageXOffset == window.pageXOffset && currPageYOffset == window.pageYOffset ) {
+                    clearInterval(scrollDone);
+                    console.log('I have finished scrolling');
+                    isDoneScrolling = true;
+                }
+                currPageXOffset = window.pageXOffset;
+                currPageYOffset = window.pageYOffset;
+            },50);
 
-        public RunnerExtension(IBrowser browser, IPage page, int? timeout)
+            while (!isDoneScrolling) {
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+            return true;
+         }";
+
+        public RunnerExtension(IBrowser browser, IPage page, int? timeout, bool screenshotAfterEachStep = true)
         {
             _Browser = browser;
             _Page = page;
             _Timeout = timeout;
+            _ScreenshotAfterEachStep = screenshotAfterEachStep;
         }
 
         public Task AfterAllSteps(UserFlow flow)
@@ -55,15 +79,11 @@ namespace PuppeteerSharp.Replay
 
         public async Task AfterEachStep(Step step, UserFlow flow)
         {
-            var folder = $"screenshots{Path.DirectorySeparatorChar}{flow.Title.Replace(" ", "_")}";
-            var filename = $"{Array.IndexOf(flow.Steps, step)}.jpg";
-            if (!Directory.Exists("screenshots"))
-                Directory.CreateDirectory("screenshots");
-            if (!Directory.Exists(folder))
-                Directory.CreateDirectory(folder);
+            if (!_ScreenshotAfterEachStep)
+                return;
 
-            await _Page.ScreenshotAsync(Path.Combine(folder, filename));
-            //return Task.CompletedTask;
+            string filePath = CreateScreenshotFilePath(step, flow);
+            await _Page.ScreenshotAsync(filePath);
         }
 
         public Task BeforeAllSteps(UserFlow flow)
@@ -112,7 +132,50 @@ namespace PuppeteerSharp.Replay
                 case StepType.WaitForElement:
                     await Task.WhenAll(eventTasks.Append(WaitForElement(step, timeout)));
                     break;
+                case StepType.Scroll:
+                    await Task.WhenAll(eventTasks.Append(Scroll(step, timeout)));
+                    break;
             }
+        }
+
+        async Task Scroll(Step step, int timeout)
+        {
+            if (step.Selectors != null && step.Selectors.Length > 0)
+            {
+                await ScrollIntoViewIfNeeded(step.Selectors, timeout);
+                var element = await WaitForSelectors(step.Selectors, timeout, true);
+                await _Page.WaitForFunctionAsync("(e, x, y) => { e.scrollTop = y; e.scrollLeft = x; return true; }", element, step.OffsetX, step.OffsetY);
+            }
+            else
+            {
+                await _Page.WaitForFunctionAsync("(x, y) => { window.scroll(x, y); return true; }", step.OffsetX, step.OffsetY);
+            }
+        }
+
+        async Task ScrollIntoViewIfNeeded(string[][] selectors, int timeout)
+        {
+            var element = await WaitForSelectors(selectors, timeout, false);
+            if (element == null)
+                throw new Exception("The element could not be found.");
+
+            await ScrollIntoViewIfNeeded(element, timeout);
+        }
+
+        async Task ScrollIntoViewIfNeeded(IElementHandle element, int timeout)
+        {
+            var isInViewport = await element.IsIntersectingViewportAsync();
+            if (isInViewport)
+                return;
+
+            await ScrollIntoView(element);
+            await element.IsIntersectingViewportAsync();
+        }
+
+        async Task ScrollIntoView(IElementHandle element)
+        {
+            await _Page.WaitForFunctionAsync(ScrollIntoViewJSFunction, element);
+            //var result = await element.EvaluateFunctionAsync(ScrollIntoViewJSFunction);
+            Debug.WriteLine($"ScrollIntoView: EvaluateFunction done.");
         }
 
         async Task WaitForElement(Step step, int timeout)
@@ -142,6 +205,7 @@ namespace PuppeteerSharp.Replay
 
         async Task Hover(Step step, int timeout)
         {
+            await ScrollIntoViewIfNeeded(step.Selectors, timeout);
             var element = await WaitForSelectors(step.Selectors, timeout, true);
             await element.HoverAsync();
         }
@@ -160,6 +224,7 @@ namespace PuppeteerSharp.Replay
 
         async Task Change(Step step, int timeout)
         {
+            await ScrollIntoViewIfNeeded(step.Selectors, timeout);
             var element = await WaitForSelectors(step.Selectors, timeout, true);
             var inputType = await element.EvaluateFunctionAsync<string>("(el) => el.type");
             if (inputType == "select-one")
@@ -174,6 +239,20 @@ namespace PuppeteerSharp.Replay
             {
                 await ChangeElementValue(step, element);
             }
+        }
+
+        static string CreateScreenshotFilePath(Step step, UserFlow flow)
+        {
+            string basePath = "screenshots";
+            var folder = $"{basePath}{Path.DirectorySeparatorChar}{flow.Title.Replace(" ", "_")}";
+            var filename = $"{Array.IndexOf(flow.Steps, step)}.jpg";
+            if (!Directory.Exists(basePath))
+                Directory.CreateDirectory(basePath);
+            if (!Directory.Exists(folder))
+                Directory.CreateDirectory(folder);
+
+            var filePath = Path.Combine(folder, filename);
+            return filePath;
         }
 
         async Task ChangeElementValue(Step step, IElementHandle element)
@@ -200,6 +279,9 @@ namespace PuppeteerSharp.Replay
         async Task Click(Step step, int timeout, int clickCount)
         {
             var element = await WaitForSelectors(step.Selectors, timeout, false);
+            Debug.WriteLine($"Click: WaitForSelectors done. element == null is {element == null}");
+            await ScrollIntoViewIfNeeded(element, timeout);
+            Debug.WriteLine("Click: ScrollIntoViewIfNeeded done.");
             var options = new ClickOptions()
             {
                 OffSet = new Offset(step.OffsetX, step.OffsetY),
@@ -210,15 +292,17 @@ namespace PuppeteerSharp.Replay
                 options.Delay = step.Duration ?? 0;
 
             await element.ClickAsync(options);
+            Debug.WriteLine("Click: Click done.");
         }
 
-        Task Navigate(Step step, int timeout)
+        async Task Navigate(Step step, int timeout)
         {
             var options = new NavigationOptions()
             {
                 Timeout = timeout,
             };
-            return _Page.GoToAsync(step.Url, options);
+            await _Page.GoToAsync(step.Url, options);
+            Debug.WriteLine("Navigate done.");
         }
 
         async Task SetViewport(Step step)
@@ -245,18 +329,12 @@ namespace PuppeteerSharp.Replay
             if (step.AssertedEvents == null || step.AssertedEvents.Length <= 0) return new Task[] { };
 
             var events = new List<Task>();
-            var waitNavOptions = new NavigationOptions()
-            {
-                Timeout = timeout,
-                WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.Load },
-            };
-
             foreach (var ev in step.AssertedEvents)
             {
                 switch (ev.Type)
                 {
                     case AssertedEventType.Navigation:
-                        events.Add(_Page.WaitForNavigationAsync(waitNavOptions));
+                        events.Add(WaitForNavigation(timeout));
                         break;
                     default:
                         throw new Exception($"Event type {ev.Type} is not supported.");
@@ -264,6 +342,17 @@ namespace PuppeteerSharp.Replay
             }
 
             return events;
+        }
+
+        async Task WaitForNavigation(int timeout)
+        {
+            var waitNavOptions = new NavigationOptions()
+            {
+                Timeout = timeout,
+                WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.Load },
+            };
+            await _Page.WaitForNavigationAsync(waitNavOptions);
+            Debug.WriteLine("Wait for navigation done.");
         }
 
         async Task<IEnumerable<IElementHandle>> WaitForAllSelectors(string[][] selectors, int timeout, bool visible)
