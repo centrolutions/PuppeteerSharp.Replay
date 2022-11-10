@@ -28,10 +28,10 @@ namespace PuppeteerSharp.Replay.Tests
             var runner = new Runner(_Flow, sut);
             await runner.Run();
 
-            var button = await page.QuerySelectorAsync("button");
-            var buttonText = await page.EvaluateFunctionAsync<string>("e => e.value");
+            var button = await page.WaitForSelectorAsync("button");
+            var buttonText = await page.EvaluateFunctionAsync<string>("(e) => e.innerText", button);
 
-            Assert.Equal("Clicked", buttonText);
+            Assert.Equal("clicked", buttonText);
         }
     }
 }
