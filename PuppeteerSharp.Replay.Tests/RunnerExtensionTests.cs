@@ -53,6 +53,32 @@ namespace PuppeteerSharp.Replay.Tests
             Assert.Equal(0, left);
         }
 
+        [Fact]
+        public async Task CanReplayNavigateEvents()
+        {
+            using IPage page = await _Fixture.Browser.NewPageAsync();
+
+            var url = $"{PuppeteerFixture.BaseUrl}/empty.html";
+            var sut = new RunnerExtension(_Fixture.Browser, page, 0);
+            var flow = new UserFlow()
+            {
+                Title = "Replay Navigate Events",
+                Steps = new Step[]
+                {
+                    new Step()
+                    {
+                        Type = StepType.Navigate,
+                        Url = url
+                    }
+                }
+            };
+
+            var runner = await Runner.CreateRunner(flow, sut);
+            await runner.Run();
+
+            Assert.Equal(url, page.Url);
+        }
+
         static UserFlow SetupScrollFlow()
         {
             var steps = new List<Step>()
@@ -60,7 +86,7 @@ namespace PuppeteerSharp.Replay.Tests
                 new Step()
                 {
                     Type = StepType.Navigate,
-                    Url = "http://localhost:5000/scroll.html"
+                    Url = $"{PuppeteerFixture.BaseUrl}/scroll.html"
                 },
                 new Step()
                 {

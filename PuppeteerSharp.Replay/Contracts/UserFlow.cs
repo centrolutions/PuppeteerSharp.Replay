@@ -11,6 +11,11 @@ namespace PuppeteerSharp.Replay.Contracts
         public int? Timeout { get; set; }
         public Step[] Steps { get; set; }
 
+        public UserFlow()
+        {
+            Steps = new Step[] { };
+        }
+
         public static UserFlow Parse(string json)
         {
             var result = JsonConvert.DeserializeObject<UserFlow>(json);

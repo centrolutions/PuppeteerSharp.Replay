@@ -9,6 +9,7 @@ namespace PuppeteerSharp.Replay.Tests
     public class PuppeteerFixture : IDisposable
     {
         public IBrowser Browser { get; set; }
+        public const string BaseUrl = "http://localhost:5000";
 
         public PuppeteerFixture()
         {
