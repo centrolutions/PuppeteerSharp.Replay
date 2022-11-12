@@ -240,6 +240,84 @@ namespace PuppeteerSharp.Replay.Tests
             Assert.True(result);
         }
 
+        [Fact]
+        public async Task CanReplayKeyboardEvents()
+        {
+            using IPage page = await _Fixture.Browser.NewPageAsync();
+
+            var url = $"{PuppeteerFixture.BaseUrl}/input.html";
+            var sut = new RunnerExtension(_Fixture.Browser, page, 0);
+            var flow = new UserFlow()
+            {
+                Title = "Replay Keyboard Events",
+                Steps = new Step[]
+                {
+                    new Step()
+                    {
+                        Type = StepType.Navigate,
+                        Url = url
+                    },
+                    new Step()
+                    {
+                        Type = StepType.KeyDown,
+                        Target = "main",
+                        Key = "Tab"
+                    },
+                    new Step()
+                    {
+                        Type = StepType.KeyUp,
+                        Target = "main",
+                        Key = "Tab",
+                    },
+                    new Step()
+                    {
+                        Type = StepType.KeyDown,
+                        Target = "main",
+                        Key = "1"
+                    },
+                    new Step()
+                    {
+                        Type = StepType.KeyUp,
+                        Target = "main",
+                        Key = "1"
+                    },
+                    new Step()
+                    {
+                        Type = StepType.KeyDown,
+                        Target = "main",
+                        Key = "Tab"
+                    },
+                    new Step()
+                    {
+                        Type = StepType.KeyUp,
+                        Target = "main",
+                        Key = "Tab",
+                    },
+                    new Step()
+                    {
+                        Type = StepType.KeyDown,
+                        Target = "main",
+                        Key = "2"
+                    },
+                    new Step()
+                    {
+                        Type = StepType.KeyUp,
+                        Target = "main",
+                        Key = "2"
+                    },
+                }
+            };
+
+            var runner = await Runner.CreateRunner(flow, sut);
+            await runner.Run();
+
+            var logText = await page.EvaluateFunctionAsync<string>("() => document.getElementById('log').innerText");
+            var logLines = logText.Trim().ReplaceLineEndings().Split(Environment.NewLine);
+
+            var expectedLog = new string[] { "one:1", "two:2" };
+            Assert.Equal(expectedLog, logLines);
+        }
+
         static UserFlow SetupScrollFlow()
         {
             var steps = new List<Step>()
