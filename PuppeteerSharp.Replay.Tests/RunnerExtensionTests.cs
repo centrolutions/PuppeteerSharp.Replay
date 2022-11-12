@@ -318,6 +318,82 @@ namespace PuppeteerSharp.Replay.Tests
             Assert.Equal(expectedLog, logLines);
         }
 
+        [Fact]
+        public async Task CanReplayEventsOnSelectElement()
+        {
+            using IPage page = await _Fixture.Browser.NewPageAsync();
+
+            var url = $"{PuppeteerFixture.BaseUrl}/select.html";
+            var sut = new RunnerExtension(_Fixture.Browser, page, 0);
+            var flow = new UserFlow()
+            {
+                Title = "Change Select Value",
+                Steps = new Step[]
+                {
+                    new Step()
+                    {
+                        Type = StepType.Navigate,
+                        Url = url
+                    },
+                    new Step()
+                    {
+                        Type = StepType.Change,
+                        Target = "main",
+                        Selectors = new string[][] { new string[] { "aria/Select" } },
+                        Value = "O2"
+                    }
+                }
+            };
+
+            var runner = await Runner.CreateRunner(flow, sut);
+            await runner.Run();
+
+            var selectValue = await page.EvaluateFunctionAsync<string>("() => document.getElementById('select').value");
+            Assert.Equal("O2", selectValue);
+        }
+
+        [Fact]
+        public async Task CloseSelectDropdownAfterTheClickAndChange()
+        {
+            using IPage page = await _Fixture.Browser.NewPageAsync();
+
+            var url = $"{PuppeteerFixture.BaseUrl}/select.html";
+            var sut = new RunnerExtension(_Fixture.Browser, page, 0);
+            var flow = new UserFlow()
+            {
+                Title = "Close Dropdown After Click and Change",
+                Steps = new Step[]
+                {
+                    new Step()
+                    {
+                        Type = StepType.Navigate,
+                        Url = url
+                    },
+                    new Step()
+                    {
+                        Type = StepType.Click,
+                        Selectors = new string[][] { new string[] { "aria/Select" } },
+                        OffsetX = 1,
+                        OffsetY = 1,
+                    },
+                    new Step()
+                    {
+                        Type = StepType.Change,
+                        Target = "main",
+                        Selectors = new string[][] { new string[] { "aria/Select" } },
+                        Value = "O2"
+                    }
+                }
+            };
+
+            var runner = await Runner.CreateRunner(flow, sut);
+            await runner.Run();
+
+            var selectValue = await page.EvaluateFunctionAsync<string>("() => document.getElementById('select').value");
+            Assert.Equal("O2", selectValue);
+
+        }
+
         static UserFlow SetupScrollFlow()
         {
             var steps = new List<Step>()
