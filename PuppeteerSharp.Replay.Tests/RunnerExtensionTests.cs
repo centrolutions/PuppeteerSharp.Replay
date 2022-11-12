@@ -34,23 +34,18 @@ namespace PuppeteerSharp.Replay.Tests
         {
             using IPage page = await _Fixture.Browser.NewPageAsync();
 
-            var sut = new RunnerExtension(_Fixture.Browser, page, 0);
-            var runner = await Runner.CreateRunner(_Flow, sut);
-            await runner.Run();
+            var result = await ExecuteFlow(page, _Flow);
 
-            Assert.True(true);
+            Assert.True(result);
         }
 
         [Fact]
         public async Task CanReplayScrollEvents()
         {
             using IPage page = await _Fixture.Browser.NewPageAsync();
-
-            var sut = new RunnerExtension(_Fixture.Browser, page, 0);
             UserFlow flow = SetupScrollFlow();
 
-            var runner = await Runner.CreateRunner(flow, sut);
-            await runner.Run();
+            var result = await ExecuteFlow(page, flow);
 
             var x = await page.EvaluateFunctionAsync<int>("() => window.pageXOffset");
             var y = await page.EvaluateFunctionAsync<int>("() => window.pageYOffset");
@@ -67,10 +62,115 @@ namespace PuppeteerSharp.Replay.Tests
         public async Task CanReplayNavigateEvents()
         {
             using IPage page = await _Fixture.Browser.NewPageAsync();
-
             var url = $"{PuppeteerFixture.BaseUrl}/empty.html";
-            var sut = new RunnerExtension(_Fixture.Browser, page, 0);
-            var flow = new UserFlow()
+            UserFlow flow = SetupReplayNavigateFlow(url);
+
+            var result = await ExecuteFlow(page, flow);
+
+            Assert.Equal(url, page.Url);
+        }
+
+        [Fact]
+        public async Task CanReplayClickEvents()
+        {
+            using IPage page = await _Fixture.Browser.NewPageAsync();
+            UserFlow flow = SetupReplayMouseClicksFlow();
+
+            var runnerResult = await ExecuteFlow(page, flow);
+            var result = await page.EvaluateFunctionAsync<bool>(GetWindowContextClicksScript);
+
+            Assert.True(result);
+        }
+
+        [Fact]
+        public async Task CanClickSvgPathElements()
+        {
+            using IPage page = await _Fixture.Browser.NewPageAsync();
+            UserFlow flow = SetupClickSvgPathFlow();
+
+            var result = await ExecuteFlow(page, flow);
+
+            Assert.True(result);
+        }
+
+        [Fact]
+        public async Task CanClickElementsInInvisibleParents()
+        {
+            using IPage page = await _Fixture.Browser.NewPageAsync();
+            UserFlow flow = SetupClickElementsInInvisibleParentFlow();
+
+            var result = await ExecuteFlow(page, flow);
+
+            Assert.True(result);
+        }
+
+        
+
+        [Fact]
+        public async Task CanClickOnCheckboxes()
+        {
+            using IPage page = await _Fixture.Browser.NewPageAsync();
+            UserFlow flow = SetupClickCheckboxFlow();
+
+            var runnerResult = await ExecuteFlow(page, flow);
+            var result = await page.EvaluateFunctionAsync<bool>("() => document.querySelector('input')?.checked");
+            
+            Assert.True(result);
+        }
+
+        [Fact]
+        public async Task CanReplayKeyboardEvents()
+        {
+            var expectedLog = new string[] { "one:1", "two:2" };
+            using IPage page = await _Fixture.Browser.NewPageAsync();
+            UserFlow flow = SetupReplayKeyboardEventsFlow();
+
+            var result = await ExecuteFlow(page, flow);
+
+            var logText = await page.EvaluateFunctionAsync<string>("() => document.getElementById('log').innerText");
+            var logLines = logText.Trim().ReplaceLineEndings().Split(Environment.NewLine);
+            
+            Assert.Equal(expectedLog, logLines);
+        }
+
+        [Fact]
+        public async Task CanReplayEventsOnSelectElement()
+        {
+            using IPage page = await _Fixture.Browser.NewPageAsync();
+            UserFlow flow = SetupReplaySelectEventsFlow();
+
+            var result = await ExecuteFlow(page, flow);
+
+            var selectValue = await page.EvaluateFunctionAsync<string>("() => document.getElementById('select').value");
+            
+            Assert.Equal("O2", selectValue);
+        }
+
+        [Fact]
+        public async Task CloseSelectDropdownAfterTheClickAndChange()
+        {
+            using IPage page = await _Fixture.Browser.NewPageAsync();
+            UserFlow flow = SetupCloseDropdownFlow();
+
+            var result = await ExecuteFlow(page, flow);
+
+            var selectValue = await page.EvaluateFunctionAsync<string>("() => document.getElementById('select').value");
+            
+            Assert.Equal("O2", selectValue);
+        }
+
+        async Task<bool> ExecuteFlow(IPage page, UserFlow flow)
+        {
+            var runnerExtension = new RunnerExtension(_Fixture.Browser, page, 0);
+            var runner = await Runner.CreateRunner(flow, runnerExtension);
+            var result = await runner.Run();
+
+            return result;
+        }
+
+        static UserFlow SetupReplayNavigateFlow(string url)
+        {
+            return new UserFlow()
             {
                 Title = "Replay Navigate Events",
                 Steps = new Step[]
@@ -82,316 +182,6 @@ namespace PuppeteerSharp.Replay.Tests
                     }
                 }
             };
-
-            var runner = await Runner.CreateRunner(flow, sut);
-            await runner.Run();
-
-            Assert.Equal(url, page.Url);
-        }
-
-        [Fact]
-        public async Task CanReplayClickEvents()
-        {
-            using IPage page = await _Fixture.Browser.NewPageAsync();
-
-            var url = $"{PuppeteerFixture.BaseUrl}/main.html";
-            var sut = new RunnerExtension(_Fixture.Browser, page, 0);
-            var flow = new UserFlow()
-            {
-                Title = "Replay Mouse Clicks",
-                Steps = new Step[]
-                {
-                    new Step()
-                    {
-                        Type = StepType.Navigate,
-                        Url = url
-                    },
-                    new Step()
-                    {
-                        Type = StepType.Click,
-                        Button = "primary",
-                        Selectors = new string[][] { new string[] { "#test" } },
-                        OffsetX = 1,
-                        OffsetY = 1,
-                    },
-                    new Step()
-                    {
-                        Type = StepType.Click,
-                        Button = "auxiliary",
-                        Selectors = new string[][] { new string[] { "#test" } },
-                        OffsetX = 1,
-                        OffsetY = 1,
-                    },
-                    new Step()
-                    {
-                        Type = StepType.Click,
-                        Button = "secondary",
-                        Selectors = new string[][] { new string[] { "#test" } },
-                        OffsetX = 1,
-                        OffsetY = 1,
-                    }
-                }
-            };
-
-            var runner = await Runner.CreateRunner(flow, sut);
-            await runner.Run();
-
-            var result = await page.EvaluateFunctionAsync<bool>(GetWindowContextClicksScript);
-            Assert.True(result);
-        }
-
-        [Fact]
-        public async Task CanClickSvgPathElements()
-        {
-            using IPage page = await _Fixture.Browser.NewPageAsync();
-
-            var url = $"{PuppeteerFixture.BaseUrl}/svg.html";
-            var sut = new RunnerExtension(_Fixture.Browser, page, 0);
-            var flow = new UserFlow()
-            {
-                Title = "Click SVG Path Element",
-                Steps = new Step[]
-                {
-                    new Step()
-                    {
-                        Type = StepType.Navigate,
-                        Url = url
-                    },
-                    new Step()
-                    {
-                        Type = StepType.Click,
-                        Selectors = new string[][] { new string[] { "svg > path" } },
-                        OffsetX = 1,
-                        OffsetY = 1,
-                    },
-                }
-            };
-
-            var runner = await Runner.CreateRunner(flow, sut);
-            var result = await runner.Run();
-
-            Assert.True(result);
-        }
-
-        [Fact]
-        public async Task CanClickElementsInInvisibleParents()
-        {
-            using IPage page = await _Fixture.Browser.NewPageAsync();
-
-            var url = $"{PuppeteerFixture.BaseUrl}/invisible-parent.html";
-            var sut = new RunnerExtension(_Fixture.Browser, page, 0);
-            var flow = new UserFlow()
-            {
-                Title = "Click element in invisible parent",
-                Steps = new Step[]
-                {
-                    new Step()
-                    {
-                        Type = StepType.Navigate,
-                        Url = url
-                    },
-                    new Step()
-                    {
-                        Type = StepType.Click,
-                        Selectors = new string[][] { new string[] { ".parent", ".child" } },
-                        OffsetX = 1,
-                        OffsetY = 1,
-                    }
-                }
-            };
-
-            var runner = await Runner.CreateRunner(flow, sut);
-            var result = await runner.Run();
-
-            Assert.True(result);
-        }
-
-        [Fact]
-        public async Task CanClickOnCheckboxes()
-        {
-            using IPage page = await _Fixture.Browser.NewPageAsync();
-
-            var url = $"{PuppeteerFixture.BaseUrl}/checkbox.html";
-            var sut = new RunnerExtension(_Fixture.Browser, page, 0);
-            var flow = new UserFlow()
-            {
-                Title = "Click Checkbox",
-                Steps = new Step[]
-                {
-                    new Step()
-                    {
-                        Type = StepType.Navigate,
-                        Url = url
-                    },
-                    new Step()
-                    {
-                        Type = StepType.Click,
-                        Selectors = new string[][] { new string[] { "input" } },
-                        OffsetX = 1,
-                        OffsetY = 1,
-                    }
-                }
-            };
-
-            var runner = await Runner.CreateRunner(flow, sut);
-            await runner.Run();
-
-            var result = await page.EvaluateFunctionAsync<bool>("() => document.querySelector('input')?.checked");
-            Assert.True(result);
-        }
-
-        [Fact]
-        public async Task CanReplayKeyboardEvents()
-        {
-            using IPage page = await _Fixture.Browser.NewPageAsync();
-
-            var url = $"{PuppeteerFixture.BaseUrl}/input.html";
-            var sut = new RunnerExtension(_Fixture.Browser, page, 0);
-            var flow = new UserFlow()
-            {
-                Title = "Replay Keyboard Events",
-                Steps = new Step[]
-                {
-                    new Step()
-                    {
-                        Type = StepType.Navigate,
-                        Url = url
-                    },
-                    new Step()
-                    {
-                        Type = StepType.KeyDown,
-                        Target = "main",
-                        Key = "Tab"
-                    },
-                    new Step()
-                    {
-                        Type = StepType.KeyUp,
-                        Target = "main",
-                        Key = "Tab",
-                    },
-                    new Step()
-                    {
-                        Type = StepType.KeyDown,
-                        Target = "main",
-                        Key = "1"
-                    },
-                    new Step()
-                    {
-                        Type = StepType.KeyUp,
-                        Target = "main",
-                        Key = "1"
-                    },
-                    new Step()
-                    {
-                        Type = StepType.KeyDown,
-                        Target = "main",
-                        Key = "Tab"
-                    },
-                    new Step()
-                    {
-                        Type = StepType.KeyUp,
-                        Target = "main",
-                        Key = "Tab",
-                    },
-                    new Step()
-                    {
-                        Type = StepType.KeyDown,
-                        Target = "main",
-                        Key = "2"
-                    },
-                    new Step()
-                    {
-                        Type = StepType.KeyUp,
-                        Target = "main",
-                        Key = "2"
-                    },
-                }
-            };
-
-            var runner = await Runner.CreateRunner(flow, sut);
-            await runner.Run();
-
-            var logText = await page.EvaluateFunctionAsync<string>("() => document.getElementById('log').innerText");
-            var logLines = logText.Trim().ReplaceLineEndings().Split(Environment.NewLine);
-
-            var expectedLog = new string[] { "one:1", "two:2" };
-            Assert.Equal(expectedLog, logLines);
-        }
-
-        [Fact]
-        public async Task CanReplayEventsOnSelectElement()
-        {
-            using IPage page = await _Fixture.Browser.NewPageAsync();
-
-            var url = $"{PuppeteerFixture.BaseUrl}/select.html";
-            var sut = new RunnerExtension(_Fixture.Browser, page, 0);
-            var flow = new UserFlow()
-            {
-                Title = "Change Select Value",
-                Steps = new Step[]
-                {
-                    new Step()
-                    {
-                        Type = StepType.Navigate,
-                        Url = url
-                    },
-                    new Step()
-                    {
-                        Type = StepType.Change,
-                        Target = "main",
-                        Selectors = new string[][] { new string[] { "aria/Select" } },
-                        Value = "O2"
-                    }
-                }
-            };
-
-            var runner = await Runner.CreateRunner(flow, sut);
-            await runner.Run();
-
-            var selectValue = await page.EvaluateFunctionAsync<string>("() => document.getElementById('select').value");
-            Assert.Equal("O2", selectValue);
-        }
-
-        [Fact]
-        public async Task CloseSelectDropdownAfterTheClickAndChange()
-        {
-            using IPage page = await _Fixture.Browser.NewPageAsync();
-
-            var url = $"{PuppeteerFixture.BaseUrl}/select.html";
-            var sut = new RunnerExtension(_Fixture.Browser, page, 0);
-            var flow = new UserFlow()
-            {
-                Title = "Close Dropdown After Click and Change",
-                Steps = new Step[]
-                {
-                    new Step()
-                    {
-                        Type = StepType.Navigate,
-                        Url = url
-                    },
-                    new Step()
-                    {
-                        Type = StepType.Click,
-                        Selectors = new string[][] { new string[] { "aria/Select" } },
-                        OffsetX = 1,
-                        OffsetY = 1,
-                    },
-                    new Step()
-                    {
-                        Type = StepType.Change,
-                        Target = "main",
-                        Selectors = new string[][] { new string[] { "aria/Select" } },
-                        Value = "O2"
-                    }
-                }
-            };
-
-            var runner = await Runner.CreateRunner(flow, sut);
-            await runner.Run();
-
-            var selectValue = await page.EvaluateFunctionAsync<string>("() => document.getElementById('select').value");
-            Assert.Equal("O2", selectValue);
-
         }
 
         static UserFlow SetupScrollFlow()
@@ -432,6 +222,232 @@ namespace PuppeteerSharp.Replay.Tests
             var flow = new UserFlow() { Title = "Scroll" };
             flow.Steps = steps.ToArray();
             return flow;
+        }
+
+        static UserFlow SetupReplayMouseClicksFlow()
+        {
+            return new UserFlow()
+            {
+                Title = "Replay Mouse Clicks",
+                Steps = new Step[]
+                {
+                    new Step()
+                    {
+                        Type = StepType.Navigate,
+                        Url = $"{PuppeteerFixture.BaseUrl}/main.html"
+                    },
+                    new Step()
+                    {
+                        Type = StepType.Click,
+                        Button = "primary",
+                        Selectors = new string[][] { new string[] { "#test" } },
+                        OffsetX = 1,
+                        OffsetY = 1,
+                    },
+                    new Step()
+                    {
+                        Type = StepType.Click,
+                        Button = "auxiliary",
+                        Selectors = new string[][] { new string[] { "#test" } },
+                        OffsetX = 1,
+                        OffsetY = 1,
+                    },
+                    new Step()
+                    {
+                        Type = StepType.Click,
+                        Button = "secondary",
+                        Selectors = new string[][] { new string[] { "#test" } },
+                        OffsetX = 1,
+                        OffsetY = 1,
+                    }
+                }
+            };
+        }
+
+        static UserFlow SetupClickSvgPathFlow()
+        {
+            return new UserFlow()
+            {
+                Title = "Click SVG Path Element",
+                Steps = new Step[]
+                {
+                    new Step()
+                    {
+                        Type = StepType.Navigate,
+                        Url = $"{PuppeteerFixture.BaseUrl}/svg.html"
+                    },
+                    new Step()
+                    {
+                        Type = StepType.Click,
+                        Selectors = new string[][] { new string[] { "svg > path" } },
+                        OffsetX = 1,
+                        OffsetY = 1,
+                    },
+                }
+            };
+        }
+
+        static UserFlow SetupClickElementsInInvisibleParentFlow()
+        {
+            return new UserFlow()
+            {
+                Title = "Click Element in Invisible Parent",
+                Steps = new Step[]
+                {
+                    new Step()
+                    {
+                        Type = StepType.Navigate,
+                        Url = $"{PuppeteerFixture.BaseUrl}/invisible-parent.html"
+                    },
+                    new Step()
+                    {
+                        Type = StepType.Click,
+                        Selectors = new string[][] { new string[] { ".parent", ".child" } },
+                        OffsetX = 1,
+                        OffsetY = 1,
+                    }
+                }
+            };
+        }
+
+        static UserFlow SetupClickCheckboxFlow()
+        {
+            return new UserFlow()
+            {
+                Title = "Click Checkbox",
+                Steps = new Step[]
+                {
+                    new Step()
+                    {
+                        Type = StepType.Navigate,
+                        Url = $"{PuppeteerFixture.BaseUrl}/checkbox.html"
+                    },
+                    new Step()
+                    {
+                        Type = StepType.Click,
+                        Selectors = new string[][] { new string[] { "input" } },
+                        OffsetX = 1,
+                        OffsetY = 1,
+                    }
+                }
+            };
+        }
+
+        static UserFlow SetupReplayKeyboardEventsFlow()
+        {
+            return new UserFlow()
+            {
+                Title = "Replay Keyboard Events",
+                Steps = new Step[]
+                {
+                    new Step()
+                    {
+                        Type = StepType.Navigate,
+                        Url = $"{PuppeteerFixture.BaseUrl}/input.html"
+                    },
+                    new Step()
+                    {
+                        Type = StepType.KeyDown,
+                        Target = "main",
+                        Key = "Tab"
+                    },
+                    new Step()
+                    {
+                        Type = StepType.KeyUp,
+                        Target = "main",
+                        Key = "Tab",
+                    },
+                    new Step()
+                    {
+                        Type = StepType.KeyDown,
+                        Target = "main",
+                        Key = "1"
+                    },
+                    new Step()
+                    {
+                        Type = StepType.KeyUp,
+                        Target = "main",
+                        Key = "1"
+                    },
+                    new Step()
+                    {
+                        Type = StepType.KeyDown,
+                        Target = "main",
+                        Key = "Tab"
+                    },
+                    new Step()
+                    {
+                        Type = StepType.KeyUp,
+                        Target = "main",
+                        Key = "Tab",
+                    },
+                    new Step()
+                    {
+                        Type = StepType.KeyDown,
+                        Target = "main",
+                        Key = "2"
+                    },
+                    new Step()
+                    {
+                        Type = StepType.KeyUp,
+                        Target = "main",
+                        Key = "2"
+                    },
+                }
+            };
+        }
+
+        static UserFlow SetupReplaySelectEventsFlow()
+        {
+            return new UserFlow()
+            {
+                Title = "Change Select Value",
+                Steps = new Step[]
+                {
+                    new Step()
+                    {
+                        Type = StepType.Navigate,
+                        Url = $"{PuppeteerFixture.BaseUrl}/select.html"
+                    },
+                    new Step()
+                    {
+                        Type = StepType.Change,
+                        Target = "main",
+                        Selectors = new string[][] { new string[] { "aria/Select" } },
+                        Value = "O2"
+                    }
+                }
+            };
+        }
+
+        static UserFlow SetupCloseDropdownFlow()
+        {
+            return new UserFlow()
+            {
+                Title = "Close Dropdown After Click and Change",
+                Steps = new Step[]
+                {
+                    new Step()
+                    {
+                        Type = StepType.Navigate,
+                        Url = $"{PuppeteerFixture.BaseUrl}/select.html"
+                    },
+                    new Step()
+                    {
+                        Type = StepType.Click,
+                        Selectors = new string[][] { new string[] { "aria/Select" } },
+                        OffsetX = 1,
+                        OffsetY = 1,
+                    },
+                    new Step()
+                    {
+                        Type = StepType.Change,
+                        Target = "main",
+                        Selectors = new string[][] { new string[] { "aria/Select" } },
+                        Value = "O2"
+                    }
+                }
+            };
         }
     }
 }
