@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -136,6 +137,106 @@ namespace PuppeteerSharp.Replay.Tests
             await runner.Run();
 
             var result = await page.EvaluateFunctionAsync<bool>(GetWindowContextClicksScript);
+            Assert.True(result);
+        }
+
+        [Fact]
+        public async Task CanClickSvgPathElements()
+        {
+            using IPage page = await _Fixture.Browser.NewPageAsync();
+
+            var url = $"{PuppeteerFixture.BaseUrl}/svg.html";
+            var sut = new RunnerExtension(_Fixture.Browser, page, 0);
+            var flow = new UserFlow()
+            {
+                Title = "Click SVG Path Element",
+                Steps = new Step[]
+                {
+                    new Step()
+                    {
+                        Type = StepType.Navigate,
+                        Url = url
+                    },
+                    new Step()
+                    {
+                        Type = StepType.Click,
+                        Selectors = new string[][] { new string[] { "svg > path" } },
+                        OffsetX = 1,
+                        OffsetY = 1,
+                    },
+                }
+            };
+
+            var runner = await Runner.CreateRunner(flow, sut);
+            var result = await runner.Run();
+
+            Assert.True(result);
+        }
+
+        [Fact]
+        public async Task CanClickElementsInInvisibleParents()
+        {
+            using IPage page = await _Fixture.Browser.NewPageAsync();
+
+            var url = $"{PuppeteerFixture.BaseUrl}/invisible-parent.html";
+            var sut = new RunnerExtension(_Fixture.Browser, page, 0);
+            var flow = new UserFlow()
+            {
+                Title = "Click element in invisible parent",
+                Steps = new Step[]
+                {
+                    new Step()
+                    {
+                        Type = StepType.Navigate,
+                        Url = url
+                    },
+                    new Step()
+                    {
+                        Type = StepType.Click,
+                        Selectors = new string[][] { new string[] { ".parent", ".child" } },
+                        OffsetX = 1,
+                        OffsetY = 1,
+                    }
+                }
+            };
+
+            var runner = await Runner.CreateRunner(flow, sut);
+            var result = await runner.Run();
+
+            Assert.True(result);
+        }
+
+        [Fact]
+        public async Task CanClickOnCheckboxes()
+        {
+            using IPage page = await _Fixture.Browser.NewPageAsync();
+
+            var url = $"{PuppeteerFixture.BaseUrl}/checkbox.html";
+            var sut = new RunnerExtension(_Fixture.Browser, page, 0);
+            var flow = new UserFlow()
+            {
+                Title = "Click Checkbox",
+                Steps = new Step[]
+                {
+                    new Step()
+                    {
+                        Type = StepType.Navigate,
+                        Url = url
+                    },
+                    new Step()
+                    {
+                        Type = StepType.Click,
+                        Selectors = new string[][] { new string[] { "input" } },
+                        OffsetX = 1,
+                        OffsetY = 1,
+                    }
+                }
+            };
+
+            var runner = await Runner.CreateRunner(flow, sut);
+            await runner.Run();
+
+            var result = await page.EvaluateFunctionAsync<bool>("() => document.querySelector('input')?.checked");
             Assert.True(result);
         }
 
