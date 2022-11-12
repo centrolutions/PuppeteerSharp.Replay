@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,6 +13,14 @@ namespace PuppeteerSharp.Replay.Tests
     {
         private readonly PuppeteerFixture _Fixture;
         UserFlow _Flow;
+        const string GetWindowContextClicksScript = @"() => {
+        const context = window;
+        return (
+          context.buttonClicks[0] === 0 &&
+          context.buttonClicks[1] === 1 &&
+          context.buttonClicks[2] === 2
+        );
+      }";
 
         public RunnerExtensionTests(PuppeteerFixture fixture)
         {
@@ -77,6 +86,57 @@ namespace PuppeteerSharp.Replay.Tests
             await runner.Run();
 
             Assert.Equal(url, page.Url);
+        }
+
+        [Fact]
+        public async Task CanReplayClickEvents()
+        {
+            using IPage page = await _Fixture.Browser.NewPageAsync();
+
+            var url = $"{PuppeteerFixture.BaseUrl}/main.html";
+            var sut = new RunnerExtension(_Fixture.Browser, page, 0);
+            var flow = new UserFlow()
+            {
+                Title = "Replay Mouse Clicks",
+                Steps = new Step[]
+                {
+                    new Step()
+                    {
+                        Type = StepType.Navigate,
+                        Url = url
+                    },
+                    new Step()
+                    {
+                        Type = StepType.Click,
+                        Button = "primary",
+                        Selectors = new string[][] { new string[] { "#test" } },
+                        OffsetX = 1,
+                        OffsetY = 1,
+                    },
+                    new Step()
+                    {
+                        Type = StepType.Click,
+                        Button = "auxiliary",
+                        Selectors = new string[][] { new string[] { "#test" } },
+                        OffsetX = 1,
+                        OffsetY = 1,
+                    },
+                    new Step()
+                    {
+                        Type = StepType.Click,
+                        Button = "secondary",
+                        Selectors = new string[][] { new string[] { "#test" } },
+                        OffsetX = 1,
+                        OffsetY = 1,
+                    }
+                }
+            };
+
+            var runner = await Runner.CreateRunner(flow, sut);
+            await runner.Run();
+
+            var result = await page.EvaluateFunctionAsync<bool>(GetWindowContextClicksScript);
+            Assert.True(result);
         }
 
         static UserFlow SetupScrollFlow()
