@@ -198,6 +198,21 @@ namespace PuppeteerSharp.Replay.Tests
             Assert.Equal("abcdef", selectedValue);
         }
 
+        [Fact]
+        public async Task CanReplayViewportChanges()
+        {
+            var page = await _Fixture.Browser.NewPageAsync();
+            UserFlow flow = SetupChangeViewportFlow();
+
+            var result = await ExecuteFlow(page, flow);
+
+            var width = await page.EvaluateFunctionAsync<int>("() => window.visualViewport?.width");
+            var height = await page.EvaluateFunctionAsync<int>("() => window.visualViewport?.height");
+
+            Assert.Equal(800, width);
+            Assert.Equal(600, height);
+        }
+
         async Task<bool> ExecuteFlow(IPage page, UserFlow flow)
         {
             var runnerExtension = new RunnerExtension(_Fixture.Browser, page, 0);
@@ -553,6 +568,32 @@ namespace PuppeteerSharp.Replay.Tests
                         Target = "main",
                         Selectors = new string[][] { new string[] { "#partially-prefilled" } },
                         Value = "abcdef"
+                    }
+                }
+            };
+        }
+
+        static UserFlow SetupChangeViewportFlow()
+        {
+            return new UserFlow()
+            {
+                Title = "Change Viewport Size",
+                Steps = new Step[]
+                {
+                    new Step()
+                    {
+                        Type = StepType.Navigate,
+                        Url = $"{PuppeteerFixture.BaseUrl}/select.html"
+                    },
+                    new Step()
+                    {
+                        Type = StepType.SetViewport,
+                        Width = 800,
+                        Height = 600,
+                        IsLandscape = false,
+                        IsMobile = false,
+                        DeviceScaleFactor = 1,
+                        HasTouch = false,
                     }
                 }
             };
