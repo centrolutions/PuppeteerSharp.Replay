@@ -263,6 +263,19 @@ namespace PuppeteerSharp.Replay.Tests
             Assert.Equal(2, buttonCount);
         }
 
+        [Fact]
+        public async Task CanWaitForExpression()
+        {
+            var page = await _Fixture.Browser.NewPageAsync();
+            UserFlow flow = SetupWaitForExpressionFlow();
+
+            var result = await ExecuteFlow(page, flow);
+
+            var count = await page.EvaluateFunctionAsync<int>("() => document.querySelectorAll('custom-element').length");
+
+            Assert.Equal(2, count);
+        }
+
         async Task<bool> ExecuteFlow(IPage page, UserFlow flow)
         {
             var runnerExtension = new RunnerExtension(_Fixture.Browser, page, 0);
@@ -781,6 +794,36 @@ namespace PuppeteerSharp.Replay.Tests
                         Selectors = new string[][] { new string[] { "custom-element", "button" } },
                         Operator = ">=",
                         Count = 2
+                    }
+                }
+            };
+        }
+
+        static UserFlow SetupWaitForExpressionFlow()
+        {
+            return new UserFlow()
+            {
+                Title = "Wait For Expression",
+                Steps = new Step[]
+                {
+                    new Step()
+                    {
+                        Type = StepType.Navigate,
+                        Url = $"{PuppeteerFixture.BaseUrl}/shadow-dynamic.html"
+                    },
+                    new Step()
+                    {
+                        Type = StepType.Click,
+                        Target = "main",
+                        Selectors = new string[][] { new string[] { "custom-element", "button" } },
+                        OffsetX = 1,
+                        OffsetY = 1
+                    },
+                    new Step()
+                    {
+                        Type = StepType.WaitForExpression,
+                        Target = "main",
+                        Expression = "document.querySelectorAll(\"custom-element\").length === 2"
                     }
                 }
             };
