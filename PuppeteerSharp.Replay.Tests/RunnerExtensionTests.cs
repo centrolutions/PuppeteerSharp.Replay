@@ -226,6 +226,19 @@ namespace PuppeteerSharp.Replay.Tests
             Assert.Equal("clicked", buttonText);
         }
 
+        [Fact]
+        public async Task CanReplayAriaSelectorsOnInputs()
+        {
+            var page = await _Fixture.Browser.NewPageAsync();
+            UserFlow flow = SetupAriaSelectorsOnInputsFlow();
+
+            var result = await ExecuteFlow(page, flow);
+
+            var activeElementId = await page.EvaluateFunctionAsync<string>("() => document.activeElement?.id");
+
+            Assert.Equal("name", activeElementId);
+        }
+
         async Task<bool> ExecuteFlow(IPage page, UserFlow flow)
         {
             var runnerExtension = new RunnerExtension(_Fixture.Browser, page, 0);
@@ -638,6 +651,40 @@ namespace PuppeteerSharp.Replay.Tests
                     {
                         Type = StepType.Click,
                         Selectors = new string[][] { new string[] { "button" } },
+                        OffsetX = 1,
+                        OffsetY = 1
+                    }
+                }
+            };
+        }
+
+        static UserFlow SetupAriaSelectorsOnInputsFlow()
+        {
+            return new UserFlow()
+            {
+                Title = "Aria Selectors on Inputs",
+                Steps = new Step[]
+                {
+                    new Step()
+                    {
+                        Type = StepType.Navigate,
+                        Url = $"{PuppeteerFixture.BaseUrl}/form.html"
+                    },
+                    new Step()
+                    {
+                        Type = StepType.SetViewport,
+                        Width = 800,
+                        Height = 600,
+                        IsLandscape = false,
+                        IsMobile = false,
+                        DeviceScaleFactor = 1,
+                        HasTouch = false,
+                    },
+                    new Step()
+                    {
+                        Type = StepType.Click,
+                        Target = "main",
+                        Selectors = new string[][] { new string[] { "aria/Name:" } },
                         OffsetX = 1,
                         OffsetY = 1
                     }
