@@ -159,6 +159,32 @@ namespace PuppeteerSharp.Replay.Tests
             Assert.Equal("O2", selectValue);
         }
 
+        [Fact]
+        public async Task CanReplayChangesOnNonTextInputs()
+        {
+            using IPage page = await _Fixture.Browser.NewPageAsync();
+            UserFlow flow = SetupReplayChangesOnNonTextInputsFlow();
+
+            var result = await ExecuteFlow(page, flow);
+
+            var selectedValue = await page.EvaluateFunctionAsync<string>("() => document.getElementById('color').value");
+
+            Assert.Equal("#333333", selectedValue);
+        }
+
+        [Fact]
+        public async Task CanChangeValueOfInputThatAlreadyHasValue()
+        {
+            var page = await _Fixture.Browser.NewPageAsync();
+            UserFlow flow = SetupChangeExistingValueFlow();
+
+            var result = await ExecuteFlow(page, flow);
+
+            var selectedValue = await page.EvaluateFunctionAsync<string>("() => document.getElementById('prefilled').value");
+
+            Assert.Equal("cba", selectedValue);
+        }
+
         async Task<bool> ExecuteFlow(IPage page, UserFlow flow)
         {
             var runnerExtension = new RunnerExtension(_Fixture.Browser, page, 0);
@@ -445,6 +471,52 @@ namespace PuppeteerSharp.Replay.Tests
                         Target = "main",
                         Selectors = new string[][] { new string[] { "aria/Select" } },
                         Value = "O2"
+                    }
+                }
+            };
+        }
+
+        static UserFlow SetupReplayChangesOnNonTextInputsFlow()
+        {
+            return new UserFlow()
+            {
+                Title = "Change Non-Text Inputs",
+                Steps = new Step[]
+                {
+                    new Step()
+                    {
+                        Type = StepType.Navigate,
+                        Url = $"{PuppeteerFixture.BaseUrl}/input.html"
+                    },
+                    new Step()
+                    {
+                        Type = StepType.Change,
+                        Target = "main",
+                        Selectors = new string[][] { new string[] { "#color" } },
+                        Value = "#333333"
+                    }
+                }
+            };
+        }
+
+        static UserFlow SetupChangeExistingValueFlow()
+        {
+            return new UserFlow()
+            {
+                Title = "Change Existing Input Value",
+                Steps = new Step[]
+                {
+                    new Step()
+                    {
+                        Type = StepType.Navigate,
+                        Url = $"{PuppeteerFixture.BaseUrl}/input.html"
+                    },
+                    new Step()
+                    {
+                        Type = StepType.Change,
+                        Target = "main",
+                        Selectors = new string[][] { new string[] { "#prefilled" } },
+                        Value = "cba"
                     }
                 }
             };

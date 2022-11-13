@@ -267,6 +267,20 @@ namespace PuppeteerSharp.Replay
 
         async Task TypeIntoElement(Step step, IElementHandle element)
         {
+            await element.EvaluateFunctionAsync(@"(input, newValue) => {
+              if (
+                newValue.length <= input.value.length ||
+                !newValue.startsWith(input.value)
+              ) {
+                input.value = '';
+                return newValue;
+              }
+              const originalValue = input.value;
+              // Move cursor to the end of the common prefix.
+              input.value = '';
+              input.value = originalValue;
+              return newValue.substring(originalValue.length);
+            }", step.Value);
             await element.TypeAsync(step.Value);
         }
 
