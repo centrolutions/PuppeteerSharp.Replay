@@ -213,6 +213,19 @@ namespace PuppeteerSharp.Replay.Tests
             Assert.Equal(600, height);
         }
 
+        [Fact]
+        public async Task CanScrollIntoViewWhenNeeded()
+        {
+            var page = await _Fixture.Browser.NewPageAsync();
+            UserFlow flow = SetupScrollIntoViewFlow();
+
+            var result = await ExecuteFlow(page, flow);
+
+            var buttonText = await page.EvaluateFunctionAsync<string>("() => document.querySelector('button')?.innerText");
+
+            Assert.Equal("clicked", buttonText);
+        }
+
         async Task<bool> ExecuteFlow(IPage page, UserFlow flow)
         {
             var runnerExtension = new RunnerExtension(_Fixture.Browser, page, 0);
@@ -594,6 +607,39 @@ namespace PuppeteerSharp.Replay.Tests
                         IsMobile = false,
                         DeviceScaleFactor = 1,
                         HasTouch = false,
+                    }
+                }
+            };
+        }
+
+        static UserFlow SetupScrollIntoViewFlow()
+        {
+            return new UserFlow()
+            {
+                Title = "Scroll Into View When Needed",
+                Steps = new Step[]
+                {
+                    new Step()
+                    {
+                        Type = StepType.SetViewport,
+                        Width = 800,
+                        Height = 600,
+                        IsLandscape = false,
+                        IsMobile = false,
+                        DeviceScaleFactor = 1,
+                        HasTouch = false,
+                    },
+                    new Step()
+                    {
+                        Type = StepType.Navigate,
+                        Url = $"{PuppeteerFixture.BaseUrl}/scroll-into-view.html"
+                    },
+                    new Step()
+                    {
+                        Type = StepType.Click,
+                        Selectors = new string[][] { new string[] { "button" } },
+                        OffsetX = 1,
+                        OffsetY = 1
                     }
                 }
             };
