@@ -193,7 +193,15 @@ namespace PuppeteerSharp.Replay
                 }
             });
 
-            var completedTaskIndex = await Task.WhenAny(timeoutTask, searchTask);
+            if (timeout > 0)
+            {
+                var completedTaskIndex = await Task.WhenAny(timeoutTask, searchTask);
+            }
+            else
+            {
+                await searchTask;
+            }
+
             if (!result)
                 throw new Exception($"Could not find {op}{step.Count} elements for selectors: " + string.Join(";", step.Selectors.Select(x => string.Join(">>", x))));
         }
