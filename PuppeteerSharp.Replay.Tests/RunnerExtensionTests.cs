@@ -103,9 +103,7 @@ namespace PuppeteerSharp.Replay.Tests
 
             Assert.True(result);
         }
-
         
-
         [Fact]
         public async Task CanClickOnCheckboxes()
         {
@@ -237,6 +235,19 @@ namespace PuppeteerSharp.Replay.Tests
             var activeElementId = await page.EvaluateFunctionAsync<string>("() => document.activeElement?.id");
 
             Assert.Equal("name", activeElementId);
+        }
+
+        [Fact(Skip = "PuppeteerSharp does not support yet.")]
+        public async Task CanReplayTextSelectors()
+        {
+            var page = await _Fixture.Browser.NewPageAsync();
+            UserFlow flow = SetupTextSelectorsFlow();
+
+            var result = await ExecuteFlow(page, flow);
+
+            var activeElementId = await page.EvaluateFunctionAsync<string>("() => document.activeElement?.id");
+
+            Assert.Equal("input", activeElementId);
         }
 
         async Task<bool> ExecuteFlow(IPage page, UserFlow flow)
@@ -685,6 +696,40 @@ namespace PuppeteerSharp.Replay.Tests
                         Type = StepType.Click,
                         Target = "main",
                         Selectors = new string[][] { new string[] { "aria/Name:" } },
+                        OffsetX = 1,
+                        OffsetY = 1
+                    }
+                }
+            };
+        }
+
+        static UserFlow SetupTextSelectorsFlow()
+        {
+            return new UserFlow()
+            {
+                Title = "Text Selectors",
+                Steps = new Step[]
+                {
+                    new Step()
+                    {
+                        Type = StepType.Navigate,
+                        Url = $"{PuppeteerFixture.BaseUrl}/main.html"
+                    },
+                    new Step()
+                    {
+                        Type = StepType.SetViewport,
+                        Width = 800,
+                        Height = 600,
+                        IsLandscape = false,
+                        IsMobile = false,
+                        DeviceScaleFactor = 1,
+                        HasTouch = false,
+                    },
+                    new Step()
+                    {
+                        Type = StepType.Click,
+                        Target = "main",
+                        Selectors = new string[][] { new string[] { "text/Inp" } },
                         OffsetX = 1,
                         OffsetY = 1
                     }

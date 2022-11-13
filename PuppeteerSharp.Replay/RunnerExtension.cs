@@ -292,10 +292,10 @@ namespace PuppeteerSharp.Replay
 
         async Task Click(Step step, int timeout, int clickCount)
         {
+            await ScrollIntoViewIfNeeded(step.Selectors, timeout);
+            Debug.WriteLine("Click: ScrollIntoViewIfNeeded done.");
             var element = await WaitForSelectors(step.Selectors, timeout, false);
             Debug.WriteLine($"Click: WaitForSelectors done. element == null is {element == null}");
-            await ScrollIntoViewIfNeeded(element, timeout);
-            Debug.WriteLine("Click: ScrollIntoViewIfNeeded done.");
             var options = new ClickOptions()
             {
                 OffSet = new Offset(step.OffsetX, step.OffsetY),
@@ -305,7 +305,14 @@ namespace PuppeteerSharp.Replay
             if (clickCount == 1)
                 options.Delay = step.Duration ?? 0;
 
-            await element.ClickAsync(options);
+            try
+            {
+                await element.ClickAsync(options);
+            }
+            catch
+            {
+                await element.EvaluateFunctionAsync("(e) => e.click()");
+            }
             Debug.WriteLine("Click: Click done.");
         }
 
