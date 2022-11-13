@@ -185,6 +185,19 @@ namespace PuppeteerSharp.Replay.Tests
             Assert.Equal("cba", selectedValue);
         }
 
+        [Fact]
+        public async Task CanChangeValueOfPartiallyFilledValue()
+        {
+            var page = await _Fixture.Browser.NewPageAsync();
+            UserFlow flow = SetupChangePartialExistingValueFlow();
+
+            var result = await ExecuteFlow(page, flow);
+
+            var selectedValue = await page.EvaluateFunctionAsync<string>("() => document.getElementById('partially-prefilled').value");
+
+            Assert.Equal("abcdef", selectedValue);
+        }
+
         async Task<bool> ExecuteFlow(IPage page, UserFlow flow)
         {
             var runnerExtension = new RunnerExtension(_Fixture.Browser, page, 0);
@@ -517,6 +530,29 @@ namespace PuppeteerSharp.Replay.Tests
                         Target = "main",
                         Selectors = new string[][] { new string[] { "#prefilled" } },
                         Value = "cba"
+                    }
+                }
+            };
+        }
+
+        static UserFlow SetupChangePartialExistingValueFlow()
+        {
+            return new UserFlow()
+            {
+                Title = "Change Existing Pre-Filled Input",
+                Steps = new Step[]
+                {
+                    new Step()
+                    {
+                        Type = StepType.Navigate,
+                        Url = $"{PuppeteerFixture.BaseUrl}/input.html"
+                    },
+                    new Step()
+                    {
+                        Type = StepType.Change,
+                        Target = "main",
+                        Selectors = new string[][] { new string[] { "#partially-prefilled" } },
+                        Value = "abcdef"
                     }
                 }
             };

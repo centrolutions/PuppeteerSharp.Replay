@@ -267,7 +267,7 @@ namespace PuppeteerSharp.Replay
 
         async Task TypeIntoElement(Step step, IElementHandle element)
         {
-            await element.EvaluateFunctionAsync(@"(input, newValue) => {
+            var textToType = await element.EvaluateFunctionAsync<string>(@"(input, newValue) => {
               if (
                 newValue.length <= input.value.length ||
                 !newValue.startsWith(input.value)
@@ -281,7 +281,7 @@ namespace PuppeteerSharp.Replay
               input.value = originalValue;
               return newValue.substring(originalValue.length);
             }", step.Value);
-            await element.TypeAsync(step.Value);
+            await element.TypeAsync(textToType);
         }
 
         async Task ChangeSelectElement(Step step, IElementHandle element)
