@@ -65,5 +65,23 @@ namespace PuppeteerSharp.Replay.Tests
 
             _ExtensionMock.Verify(x => x.RunStep(It.IsAny<Step>(), It.IsAny<UserFlow>()), Times.Exactly(timesExpected));
         }
+
+        [Fact]
+        public async Task Run_CompletesAndReturnsTrue_WhenFlowIsEmpty()
+        {
+            var sut = new Runner(new UserFlow() { Title = "Empty Flow", Steps = new Step[] { } }, _ExtensionMock.Object);
+
+            var result = await sut.Run();
+
+            Assert.True(result);
+        }
+
+        [Fact]
+        public async Task Run_ReturnsTrue_WhenAllStepsAreComplete()
+        {
+            var result = await _Sut.Run();
+
+            Assert.True(result);
+        }
     }
 }

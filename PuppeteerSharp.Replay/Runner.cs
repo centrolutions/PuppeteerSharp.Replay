@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using PuppeteerSharp.Replay.Contracts;
 
@@ -15,19 +16,22 @@ namespace PuppeteerSharp.Replay
             Extension = extension;
         }
 
-        public async Task<bool> Run()
+        public async Task<bool> Run(CancellationToken cancellationToken = default)
         {
             await Extension.BeforeAllSteps(Flow);
 
-            foreach (var step in Flow.Steps)
+            int stepIndex = 0;
+            while (stepIndex < Flow.Steps.Length && !cancellationToken.IsCancellationRequested)
             {
+                var step = Flow.Steps[stepIndex];
                 await Extension.BeforeEachStep(step, Flow);
                 await Extension.RunStep(step, Flow);
                 await Extension.AfterEachStep(step, Flow);
+                stepIndex++;
             }
 
             await Extension.AfterAllSteps(Flow);
-            return false;
+            return stepIndex >= Flow.Steps.Length;
         }
 
         public static async Task<Runner> CreateRunner(UserFlow flow, IRunnerExtension extension = null)
