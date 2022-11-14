@@ -22,7 +22,7 @@ namespace PuppeteerSharp.Replay.Tests
 
             var options = new LaunchOptions()
             {
-                Headless = true,
+                Headless = false,
                 DefaultViewport = new ViewPortOptions() { Width = 1280, Height = 810 }
             };
             Browser = Puppeteer.LaunchAsync(options).Result;
@@ -31,6 +31,8 @@ namespace PuppeteerSharp.Replay.Tests
         public void Dispose()
         {
             //no-op
+            Browser?.CloseAsync().Wait();
+            Browser?.Dispose();
         }
     }
 
