@@ -276,6 +276,17 @@ namespace PuppeteerSharp.Replay.Tests
             Assert.Equal(2, count);
         }
 
+        [Fact(Skip = "temp")]
+        public async Task CanReplayWithPopups()
+        {
+            var page = await _Fixture.Browser.NewPageAsync();
+            UserFlow flow = SetupReplayWithPopupsFlow();
+
+            var result = await ExecuteFlow(page, flow);
+
+            Assert.True(result);
+        }
+
         async Task<bool> ExecuteFlow(IPage page, UserFlow flow)
         {
             var runnerExtension = new RunnerExtension(_Fixture.Browser, page, 0);
@@ -824,6 +835,52 @@ namespace PuppeteerSharp.Replay.Tests
                         Type = StepType.WaitForExpression,
                         Target = "main",
                         Expression = "document.querySelectorAll(\"custom-element\").length === 2"
+                    }
+                }
+            };
+        }
+
+        static UserFlow SetupReplayWithPopupsFlow()
+        {
+            return new UserFlow()
+            {
+                Title = "Replay With Popups",
+                Steps = new Step[]
+                {
+                    new Step()
+                    {
+                        Type = StepType.Navigate,
+                        Url = $"{PuppeteerFixture.BaseUrl}/main.html",
+                        AssertedEvents = new AssertedEvent[]
+                        {
+                            new AssertedEvent()
+                            {
+                                Title = String.Empty,
+                                Type = AssertedEventType.Navigation,
+                                Url = $"{PuppeteerFixture.BaseUrl}/main.html"
+                            }
+                        }
+                    },
+                    new Step()
+                    {
+                        Type = StepType.Click,
+                        Selectors = new string[][] { new string[] { "aria/Open Popup" }, new string[] { "#popup" } },
+                        Target = "main",
+                        OffsetX = 1,
+                        OffsetY = 1
+                    },
+                    new Step()
+                    {
+                        Type = StepType.Click,
+                        Selectors = new string[][] { new string[] { "aria/Button in Popup" }, new string[] { "body > button" } },
+                        Target = $"{PuppeteerFixture.BaseUrl}/popup.html",
+                        OffsetX = 1,
+                        OffsetY = 1
+                    },
+                    new Step()
+                    {
+                        Type = StepType.Close,
+                        Target = $"{PuppeteerFixture.BaseUrl}/popup.html",
                     }
                 }
             };
