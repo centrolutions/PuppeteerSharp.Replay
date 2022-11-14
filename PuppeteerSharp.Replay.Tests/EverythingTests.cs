@@ -42,6 +42,8 @@ namespace PuppeteerSharp.Replay.Tests
             var logText = await logPre.EvaluateFunctionAsync<string>("e => e.innerText");
             var logLines = logText.ReplaceLineEndings().Split(Environment.NewLine);
 
+            await page.CloseAsync();
+
             Assert.Equal(_ExpectedLog, logLines);
         }
     }
