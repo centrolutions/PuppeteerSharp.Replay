@@ -276,7 +276,7 @@ namespace PuppeteerSharp.Replay.Tests
             Assert.Equal(2, count);
         }
 
-        [Fact(Skip = "temp")]
+        [Fact]
         public async Task CanReplayWithPopups()
         {
             var page = await _Fixture.Browser.NewPageAsync();

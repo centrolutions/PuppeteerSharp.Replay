@@ -82,7 +82,7 @@ namespace PuppeteerSharp.Replay
 
             string filePath = CreateScreenshotFilePath(step, flow);
             var page = await GetTargetPageForStep(step, 0);
-            await page.ScreenshotAsync(filePath);
+            await page?.ScreenshotAsync(filePath);
         }
 
         public Task BeforeAllSteps(UserFlow flow)
@@ -152,7 +152,7 @@ namespace PuppeteerSharp.Replay
                 return _Page;
 
             var waitOptions = new WaitForOptions() { Timeout = timeout };
-            var target = await _Browser.WaitForTargetAsync(t => t.Url == step.Url, waitOptions);
+            var target = await _Browser.WaitForTargetAsync(t => t.Url == step.Target, waitOptions);
             var targetPage = await target.PageAsync();
 
             if (targetPage == null)

@@ -22,7 +22,7 @@ namespace PuppeteerSharp.Replay.Tests
 
             var options = new LaunchOptions()
             {
-                Headless = false,
+                Headless = true,
                 DefaultViewport = new ViewPortOptions() { Width = 1280, Height = 810 }
             };
             Browser = Puppeteer.LaunchAsync(options).Result;
