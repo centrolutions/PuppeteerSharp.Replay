@@ -5,8 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace PuppeteerSharp.Replay
@@ -330,7 +328,7 @@ namespace PuppeteerSharp.Replay
             await element.EvaluateFunctionAsync("(e) => { e.blur(); e.focus(); }");
         }
 
-        async Task  Click(Step step, int timeout, int clickCount)
+        async Task Click(Step step, int timeout, int clickCount)
         {
             var page = await GetTargetPageForStep(step, timeout);
             await ScrollIntoViewIfNeeded(page, step.Selectors, timeout);
