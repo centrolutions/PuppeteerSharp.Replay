@@ -1,7 +1,4 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Text.Json;
 
 namespace PuppeteerSharp.Replay.Contracts
 {
@@ -18,7 +15,7 @@ namespace PuppeteerSharp.Replay.Contracts
 
         public static UserFlow Parse(string json)
         {
-            var result = JsonConvert.DeserializeObject<UserFlow>(json);
+            var result = JsonSerializer.Deserialize<UserFlow>(json);
             return result;
         }
     }

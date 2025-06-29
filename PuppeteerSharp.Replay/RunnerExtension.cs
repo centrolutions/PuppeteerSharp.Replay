@@ -258,14 +258,14 @@ namespace PuppeteerSharp.Replay
         {
             var page = await GetTargetPageForStep(step, 0);
             await page.Keyboard.DownAsync(step.Key);
-            await page.WaitForTimeoutAsync(100);
+            await Task.Delay(100);
         }
 
         async Task KeyUp(Step step)
         {
             var page = await GetTargetPageForStep(step, 0);
             await page.Keyboard.UpAsync(step.Key);
-            await page.WaitForTimeoutAsync(100);
+            await Task.Delay(100);
         }
 
         async Task Change(Step step, int timeout)
@@ -347,7 +347,7 @@ namespace PuppeteerSharp.Replay
             var options = new ClickOptions()
             {
                 OffSet = new Offset(step.OffsetX, step.OffsetY),
-                ClickCount = clickCount,
+                Count = clickCount,
                 Button = _MouseButtonMap[step.Button ?? string.Empty]
             };
             if (clickCount == 1)
