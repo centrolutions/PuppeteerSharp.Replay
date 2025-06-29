@@ -15,7 +15,7 @@ namespace PuppeteerSharp.Replay.Contracts
 
         public static UserFlow Parse(string json)
         {
-            var result = JsonSerializer.Deserialize<UserFlow>(json);
+            var result = JsonSerializer.Deserialize<UserFlow>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             return result;
         }
     }

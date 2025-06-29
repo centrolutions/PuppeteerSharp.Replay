@@ -8,12 +8,12 @@ namespace PuppeteerSharp.Replay.Tests
         public void Parse_DeserializesCorrectly()
         {
             var jsonText = File.ReadAllText($"Data{Path.DirectorySeparatorChar}UserFlowExample.json");
-            
+
             var sut = UserFlow.Parse(jsonText);
 
             Assert.NotNull(sut);
-            Assert.Equal("Google Centrolutions", sut.Title);
-            Assert.Equal(7, sut.Steps.Length);
+            Assert.Equal("Select All Menu Items on Centrolutions", sut.Title);
+            Assert.Equal(8, sut.Steps.Length);
         }
     }
 }

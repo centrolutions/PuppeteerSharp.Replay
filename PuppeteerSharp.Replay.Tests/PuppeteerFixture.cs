@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace PuppeteerSharp.Replay.Tests
+﻿namespace PuppeteerSharp.Replay.Tests
 {
     public class PuppeteerFixture : IDisposable
     {
@@ -25,13 +19,13 @@ namespace PuppeteerSharp.Replay.Tests
                 Headless = true,
                 DefaultViewport = new ViewPortOptions() { Width = 1280, Height = 810 }
             };
-            Browser = Puppeteer.LaunchAsync(options).Result;
+            Browser = Task.Run(() => Puppeteer.LaunchAsync(options)).GetAwaiter().GetResult();
         }
 
         public void Dispose()
         {
             //no-op
-            Browser?.CloseAsync().Wait();
+            Task.Run(() => Browser?.CloseAsync()).GetAwaiter().GetResult();
             Browser?.Dispose();
         }
     }

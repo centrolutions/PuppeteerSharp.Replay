@@ -1,10 +1,10 @@
 {
-	"title": "Google Centrolutions",
+	"title": "Select All Menu Items on Centrolutions",
 	"steps": [
 		{
 			"type": "setViewport",
-			"width": 990,
-			"height": 809,
+			"width": 1387,
+			"height": 1013,
 			"deviceScaleFactor": 1,
 			"isMobile": false,
 			"hasTouch": false,
@@ -12,11 +12,11 @@
 		},
 		{
 			"type": "navigate",
-			"url": "https://www.google.com/",
+			"url": "https://centrolutions.com/",
 			"assertedEvents": [
 				{
 					"type": "navigation",
-					"url": "https://www.google.com/",
+					"url": "https://centrolutions.com/",
 					"title": ""
 				}
 			]
@@ -26,65 +26,120 @@
 			"target": "main",
 			"selectors": [
 				[
-					"aria/Search"
+					"aria/About Me[role=\"link\"]"
 				],
 				[
-					"body > div.L3eUgb > div.o3j99.ikrT4e.om7nvf > form > div:nth-child(1) > div.A8SBwf > div.RNNXgb > div > div.a4bIc > input"
-				]
-			],
-			"offsetY": 21.29998779296875,
-			"offsetX": 109
-		},
-		{
-			"type": "change",
-			"value": "centrolutions",
-			"selectors": [
-				[
-					"aria/Search"
+					"li:nth-of-type(2) > a"
 				],
 				[
-					"body > div > div.o3j99.ikrT4e.om7nvf > form > div > div > div.RNNXgb > div > div.a4bIc > input"
+					"xpath///*[@id=\"navbarSupportedContent\"]/ul/li[2]/a"
+				],
+				[
+					"pierce/li:nth-of-type(2) > a"
 				]
 			],
-			"target": "main"
-		},
-		{
-			"type": "keyDown",
-			"target": "main",
-			"key": "Enter",
-			"assertedEvents": [
-				{
-					"type": "navigation",
-					"url": "https://www.google.com/search?q=centrolutions&sxsrf=ALiCzsYdBfXak3X3pLDbFpvBTBwp6Sj2sA%3A1665877597343&source=hp&ei=XUZLY8yiEvvk0PEPz6eK4A4&iflsig=AJiK0e8AAAAAY0tUbVhUJhFWSreDy8tYtmlvlbodJqeH&ved=0ahUKEwiMxbTTteP6AhV7MjQIHc-TAuwQ4dUDCAk&uact=5&oq=centrolutions&gs_lcp=Cgdnd3Mtd2l6EAMyBAgjECcyAggmOgcIIxDqAhAnOg0ILhDHARCvARDqAhAnOgcILhDqAhAnOgUIABCRAjoLCAAQgAQQsQMQgwE6DgguEIAEELEDEIMBENQCOhEILhCABBCxAxCDARDHARDRAzoLCC4QsQMQgwEQkQI6BQguEIAEOgsILhCABBDHARDRAzoICAAQgAQQsQM6CwguEIAEEMcBEK8BOggIABCxAxCDAToOCC4QgAQQxwEQrwEQ1AI6BQgAEIAEOg4ILhCABBCxAxDHARDRAzoLCC4QgAQQsQMQgwE6CAgAEIAEEMkDOgsILhCxAxDHARDRAzoKCAAQgAQQsQMQCjoHCAAQgAQQCjoNCC4QgAQQxwEQrwEQCjoKCAAQgAQQyQMQCjoECAAQHjoGCAAQHhAKUKsGWNsPYPAQaAFwAHgAgAHDAYgB6AuSAQM1LjiYAQCgAQGwAQo&sclient=gws-wiz",
-					"title": ""
-				}
-			]
-		},
-		{
-			"type": "keyUp",
-			"key": "Enter",
-			"target": "main"
+			"offsetY": 24,
+			"offsetX": 41.39996337890625
 		},
 		{
 			"type": "click",
 			"target": "main",
 			"selectors": [
 				[
-					"aria/Centrolutions - YouTube"
+					"aria/Services[role=\"link\"]"
 				],
 				[
-					"#rso > div:nth-child(2) > div > div > div > div > a > h3"
+					"li:nth-of-type(3) > a"
+				],
+				[
+					"xpath///*[@id=\"navbarSupportedContent\"]/ul/li[3]/a"
+				],
+				[
+					"pierce/li:nth-of-type(3) > a"
 				]
 			],
-			"offsetY": 16.6875,
-			"offsetX": 185,
-			"assertedEvents": [
-				{
-					"type": "navigation",
-					"url": "https://www.youtube.com/user/Centrolutions",
-					"title": ""
-				}
-			]
+			"offsetY": 18,
+			"offsetX": 45.2874755859375
+		},
+		{
+			"type": "click",
+			"target": "main",
+			"selectors": [
+				[
+					"aria/My Work[role=\"link\"]"
+				],
+				[
+					"li:nth-of-type(4) > a"
+				],
+				[
+					"xpath///*[@id=\"navbarSupportedContent\"]/ul/li[4]/a"
+				],
+				[
+					"pierce/li:nth-of-type(4) > a"
+				]
+			],
+			"offsetY": 25,
+			"offsetX": 39.5374755859375
+		},
+		{
+			"type": "click",
+			"target": "main",
+			"selectors": [
+				[
+					"aria/Testimonials[role=\"link\"]"
+				],
+				[
+					"li:nth-of-type(5) > a"
+				],
+				[
+					"xpath///*[@id=\"navbarSupportedContent\"]/ul/li[5]/a"
+				],
+				[
+					"pierce/li:nth-of-type(5) > a"
+				]
+			],
+			"offsetY": 22,
+			"offsetX": 52.3499755859375
+		},
+		{
+			"type": "click",
+			"target": "main",
+			"selectors": [
+				[
+					"aria/Blog"
+				],
+				[
+					"li:nth-of-type(6) > a"
+				],
+				[
+					"xpath///*[@id=\"navbarSupportedContent\"]/ul/li[6]/a"
+				],
+				[
+					"pierce/li:nth-of-type(6) > a"
+				]
+			],
+			"offsetY": 21,
+			"offsetX": 32.5
+		},
+		{
+			"type": "click",
+			"target": "main",
+			"selectors": [
+				[
+					"aria/Contact[role=\"link\"]"
+				],
+				[
+					"li:nth-of-type(7) > a"
+				],
+				[
+					"xpath///*[@id=\"navbarSupportedContent\"]/ul/li[7]/a"
+				],
+				[
+					"pierce/li:nth-of-type(7) > a"
+				]
+			],
+			"offsetY": 18,
+			"offsetX": 24.5499267578125
 		}
 	]
 }
