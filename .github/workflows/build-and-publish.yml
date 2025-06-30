@@ -48,7 +48,7 @@ jobs:
       run: dotnet nuget push ./PuppeteerSharp.Replay/bin/Release/PuppeteerSharp.Replay*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
     - name: Collect Artifacts
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: screenshots
         path: PuppeteerSharp.Replay.Tests/bin/Release/net6.0/screenshots/
