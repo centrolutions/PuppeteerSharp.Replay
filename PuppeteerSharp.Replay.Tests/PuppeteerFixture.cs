@@ -17,7 +17,8 @@
             var options = new LaunchOptions()
             {
                 Headless = true,
-                DefaultViewport = new ViewPortOptions() { Width = 1280, Height = 810 }
+                DefaultViewport = new ViewPortOptions() { Width = 1280, Height = 810 },
+                Args = new[] { "--no-sandbox", "--disable-setuid-sandbox" }, //todo: figure out why we need this in GitHub Actions runners
             };
             Browser = Task.Run(() => Puppeteer.LaunchAsync(options)).GetAwaiter().GetResult();
         }
